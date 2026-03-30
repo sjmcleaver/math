@@ -1,0 +1,7 @@
+conda activate sage
+
+sage
+
+or
+
+sage -n jupyter

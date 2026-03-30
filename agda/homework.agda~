@@ -1,0 +1,80 @@
+{-# OPTIONS --without-K --exact-split --safe --auto-inline #-}
+
+open import HoTT-UF-Agda public
+
+open ℕ-order
+open Arithmetic renaming (_+_ to _∔_)
+
+-- rewrite ≤ using ℕ-induction and prove it is equivalent
+
+_≤'_ : ℕ → ℕ → 𝓤₀ ̇
+_≤'_ = ℕ-recursion (ℕ → 𝓤₀ ̇ ) (λ _ → 𝟙) (λ _ h → ℕ-recursion (𝓤₀ ̇ ) 𝟘 (λ n _ → h n))
+
+≤_eq_≤' : (x y : ℕ) → (x ≤ y) ＝ (x ≤' y)
+≤_eq_≤' 0 n = refl 𝟙
+≤_eq_≤' (succ n) 0 = refl 𝟘
+≤_eq_≤' (succ n) (succ m) = ≤_eq_≤' n m
+
+
+-- prove x ≤ y ⇔ Σ d : ℕ , x + d = y
+
+le_imp_ex : (x y : ℕ) → x ≤ y → Σ (λ d → d ∔ x ＝ y)
+le_imp_ex 0 0 h = (0 , refl 0)
+le_imp_ex (succ n) 0 h = (0 , !𝟘 (0 ∔ (succ n) ＝ 0) h)
+le_imp_ex (succ n) (succ m) h = (pr₁ s , ap succ (pr₂ s)) where
+  s :  Σ (λ d → (d ∔ n) ＝ m)
+  s = le_imp_ex n m h
+le_imp_ex 0 (succ n) h = (succ n , p (succ n)) where
+  p : (n : ℕ) -> (n ∔ 0) ＝ n
+  p 0 = refl 0
+  p (succ n) = ap succ (p n)
+
+ex_imp_le : (x y : ℕ) → Σ (λ d → d ∔ x ＝ y) → x ≤ y
+ex_imp_le 0 _ _ = ⋆
+ex_imp_le (succ n) 0 (d , h) = !𝟘 ((succ n) ≤ 0) (a h) where
+  a : (succ(d ∔ n) ＝ 0) → 𝟘
+  a p = 𝟙-is-not-𝟘 (ap f p) where
+    f : ℕ →  𝓤₀ ̇
+    f 0 = 𝟘
+    f (succ _) = 𝟙
+ex_imp_le (succ m) (succ n) (d , p) = ex_imp_le m n (d , succ-lc p)
+
+
+-- rewrite ℍ using 𝕁 without pattern matching
+
+ℍ' : {X : 𝓤 ̇ } (x : X) (B : (y : X) → x ＝ y → 𝓥 ̇ )
+   → B x (refl x)
+   → (y : X) (p : x ＝ y) → B y p
+
+ℍ' {X} x B b y p = transport B (𝕁 X (λ x y p → (x , refl x) ＝ (y , p)) (λ u → refl ((u , refl u))) x y p) b
+
+
+--T := Σ y : X , x = y
+
+--(x, refl x) : T
+--(y, p) : T
+
+--B : T → V
+
+
+--given some q : (x, refl x) = (y, p)
+
+--tr B q : B x (refl x) → B y p
+
+
+
+
+--define A such that A x y p = ((x, refl x) = (y, p))
+
+--q : (x, refl x) = (y, p)
+--q = J X (λ x y p → (x, refl x) = (y, p)) (λ u → refl ((u, refl u))) x y p
+
+
+
+
+
+
+
+
+
+

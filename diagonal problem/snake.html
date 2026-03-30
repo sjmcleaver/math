@@ -1,0 +1,251 @@
+<html>
+<head>
+<style>
+.cell {
+  display: inline-block;
+  width: 25px;
+  height: 25px;/*
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;*/
+}
+
+.cell::first-child {
+  /*border: 1px solid black;*/
+}
+
+.diagonal {
+  height: 2px;
+  width: 36px;
+  border-radius: 1px;
+  position: relative;
+  background-color: black;
+  top: 11px;
+  left: -5px;
+}
+
+.cell.plus {
+  background-color: #bbb;
+}
+
+.junction {
+  display: inline-block;
+  width: 2px;
+  background-color: red;
+  height: 25px;
+}
+
+.junction.good {
+  background-color: green;
+}
+
+.up {
+  transform: rotate(45deg);
+}
+
+.down {
+  transform: rotate(-45deg);
+}
+ 
+.control {
+  margin: 10px;
+  display: inline-block;
+}
+
+.pattern {
+  display: inline-block;
+  margin: 10px;
+}
+
+#code {
+  padding: 5px;
+  width: 500px
+}
+
+</style>
+</head>
+<body>
+<div id="controls">
+  <div class="control">
+    <button id="draw">draw</button>
+  </div>
+  <div class="control">
+    <p><input type="checkbox" id="polarity-view"> P</p>
+  </div>
+  <div class="control">
+    <p><input type="text" id="code"></p>
+  </div>
+</div>
+<div id="rows"></div>
+<script>
+
+function cell(type, phase) {
+  let polarity = (phase + type) % 2;
+  let cell = document.createElement("div");
+  cell.classList.add("cell");
+  if (polarityToggle) {
+    cell.classList.add(polarity ? "plus" : "minus");
+  }
+  let diagonal = document.createElement("div");
+  diagonal.classList.add("diagonal");
+  diagonal.classList.add(type ? "up" : "down");
+  cell.appendChild(diagonal);
+  return cell;
+}
+
+function junction(good) {
+  let junction = document.createElement("div");
+  junction.classList.add("junction");
+  if (good) { junction.classList.add("good"); }
+  return junction;
+}
+
+const EXAMPLE = "02020110202120102121022102222011101";
+
+let rows = document.getElementById("rows"),
+  code = document.getElementById("code"),
+  polarityCheckbox = document.getElementById("polarity-view");
+
+code.value = EXAMPLE;
+polarityCheckbox.checked = false;
+
+function clear() {
+  while (rows.children.length) {
+    rows.removeChild(rows.children[0]);
+  }
+}
+
+function render(code) {
+  clear();
+  let d1 = document.createElement("div"),
+    d2 = document.createElement("div"),
+    last = "";
+  (code).split("").map((c, i) => {
+    let d = parseInt(c),
+      p = i % 2;
+
+    if (last == "1" && d == "2" || last == "2" && d == "1") {
+      d1.appendChild(junction(p));
+      d2.appendChild(junction(p));
+    }
+
+    if (d == 0) {
+      d1.appendChild(p ? cell(0, p) : cell(1, p));
+      d2.appendChild(p ? cell(1, p + 1) : cell(0, p + 1));
+    } else if (d == 1) {
+      d1.appendChild(p ? cell(1, p) : cell(0, p));
+      d2.appendChild(p ? cell(1, p + 1) : cell(0, p + 1));
+    } else {
+      d1.appendChild(p ? cell(0, p) : cell(1, p));
+      d2.appendChild(p ? cell(0, p + 1) : cell(1, p + 1));
+    }
+    last = d;
+  });
+
+  rows.appendChild(d1);
+  rows.appendChild(d2);
+}
+
+function drawMatrix(M, p = false) {
+  const pattern = document.createElement("div");
+  pattern.classList.add("pattern");
+
+  M.forEach((row, i) => {
+    const div = document.createElement("div");
+    div.classList.add("row");
+    row.forEach((bit, j) => {
+      let type = p ? ((bit + i + j) % 2) : bit;
+      div.appendChild(cell(type, i + j));
+    });
+    pattern.appendChild(div);
+  });
+  rows.appendChild(pattern);
+}
+
+document.getElementById("draw").addEventListener("click", () => {
+  render(code.value);
+});
+
+let polarityToggle = polarityCheckbox.checked;
+
+polarityCheckbox.addEventListener("click", () => {
+  polarityToggle = polarityCheckbox.checked;
+  render(code.value);
+});
+
+
+
+// render(EXAMPLE);
+
+// drawMatrix([
+//   [ 1, 1, 1, 1 ],
+//   [ 1, 1, 1, 1 ],
+//   [ 1, 1, 1, 1 ],
+//   [ 1, 1, 1, 1 ]
+// ], true);
+
+// drawMatrix([
+//   [ 0, 0, 0, 0 ],
+//   [ 0, 0, 0, 0 ],
+//   [ 0, 0, 0, 0 ],
+//   [ 0, 0, 0, 0 ]
+// ], true);
+
+
+function pattern(m, n, id) {
+  let out = [];
+  for (let i = 0; i < m; i++) {
+    out[i] = [];
+    for (let j = 0; j < n; j++) {
+      out[i][j] = id % 2;
+      id >>= 1;
+    }
+  }
+  return out;
+}
+
+function graphFrom() {
+
+}
+
+
+function drawPartition(P) {
+  let G = graphFrom(P);
+
+  let sizes = G.components.map((c) => { return c.size; })
+  sizes.sorted();
+  console.log(countParts(P));
+}
+
+
+
+function bijections(n) {
+  if (n == 1) { return [ (i) => { return i; } ]; }
+  let all = [];
+  let sub = bijections(n - 1);
+
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < sub.length; j++) {
+      let s = sub[j];
+      all.push((k) => {
+        if (k == 0) { return i; }
+        return k <= i ? s(k - 1) : s(k - 1) + 1;
+      });
+    }
+  }
+
+  return all;
+}
+
+
+for (let i = 0; i < 512; i++) {
+  let P = pattern(3, 3, i)
+  drawMatrix(P, true);
+  // drawPartition(P);
+}
+
+
+
+</script>
+</body>
+</html>
+
