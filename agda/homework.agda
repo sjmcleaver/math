@@ -439,27 +439,26 @@ EX-comp-inverses : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y) (g
 EX-comp-inverses f g i j f' g' u v z = (u (g' z)) ∙ (ap (inverse f i) (v z)) ∙ ((inverse-of-∘ f g i j) z)
 
 EX-equiv-to-set : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → X ≃ Y → is-set Y → is-set X
-EX-equiv-to-set X Y (f , e) s x x' p p' = (G x x' p) ⁻¹ ∙ H ∙ G x x' p' where
-  g = inverse f e
+EX-equiv-to-set X Y (f , e) s x x' p p' =
+  p                       ＝⟨ (G x x' p) ⁻¹ ⟩
+  F x x' (ap (g ∘ f) p)   ＝⟨ ap (F x x') (ap-∘ f g p) ⟩
+  F x x' (ap g (ap f p))  ＝⟨ ap ((F x x') ∘ (ap g)) (s (f x) (f x') (ap f p) (ap f p')) ⟩
+  F x x' (ap g (ap f p')) ＝⟨ ap (F x x') ((ap-∘ f g p') ⁻¹) ⟩
+  F x x' (ap (g ∘ f) p')  ＝⟨ G x x' p' ⟩
+  p'                      ∎ where
+    g = inverse f e
 
-  i : (t : X) → g (f t) ＝ t
-  i = inverses-are-retractions f e
+    i : (t : X) → g (f t) ＝ t
+    i = inverses-are-retractions f e
 
-  F : (t t' : X) → g (f t) ＝ g (f t') → t ＝ t'
-  F t t' q = (i t) ⁻¹ ∙ q ∙ i t'
+    F : (t t' : X) → g (f t) ＝ g (f t') → t ＝ t'
+    F t t' q = (i t) ⁻¹ ∙ q ∙ i t'
 
-  G : (t t' : X) → (q : t ＝ t') → F t t' (ap (g ∘ f) q) ＝ q
-  G t t (refl t) =
-    (i t) ⁻¹ ∙ refl ((g ∘ f) t) ∙ i t ＝⟨ refl-right ⟩
-    (i t) ⁻¹ ∙ i t                    ＝⟨ ⁻¹-left∙ (i t) ⟩
-    refl t                            ∎
-
-  H : F x x' (ap (g ∘ f) p) ＝ F x x' (ap (g ∘ f) p')
-  H =
-    F x x' (ap (g ∘ f) p)   ＝⟨ ap (F x x') (ap-∘ f g p) ⟩
-    F x x' (ap g (ap f p))  ＝⟨ ap ((F x x') ∘ (ap g)) (s (f x) (f x') (ap f p) (ap f p')) ⟩
-    F x x' (ap g (ap f p')) ＝⟨ ap (F x x') ((ap-∘ f g p') ⁻¹) ⟩
-    F x x' (ap (g ∘ f) p')  ∎
+    G : (t t' : X) → (q : t ＝ t') → F t t' (ap (g ∘ f) q) ＝ q
+    G t t (refl t) =
+      (i t) ⁻¹ ∙ refl ((g ∘ f) t) ∙ i t ＝⟨ refl-right ⟩
+      (i t) ⁻¹ ∙ i t                    ＝⟨ ⁻¹-left∙ (i t) ⟩
+      refl t                            ∎
 
 EX-sections-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-retraction f → g ∼ f
                              → has-retraction g
@@ -472,18 +471,15 @@ EX-retractions-closed-under-∼ f g (s , i) e = (s , (λ x → (e (s x)) ∙ (i 
 EX-one-inverse : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) (f : X → Y) (r s : Y → X) → (r ∘ f ∼ id) → (f ∘ s ∼ id) → r ∼ s
 EX-one-inverse X Y f r s i j y = ap r ((j y) ⁻¹) ∙ i (s y)
 
+EX-joyal-equivs-are-invertible : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-joyal-equiv f → invertible f
+EX-joyal-equivs-are-invertible f ((s , i) , (r , j)) = (r , (j , (λ x → ap f (p x) ∙ (i x)))) where
+  p = EX-one-inverse (domain f) (codomain f) f r s j i
+
+EX-joyal-equivs-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-joyal-equiv f → is-equiv f
+EX-joyal-equivs-are-equivs f ((s , i) , (r , j)) y = ((s y , i y) , ?)
 
 
 {-
-
-
-
-joyal-equivs-are-invertible : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
-                            → is-joyal-equiv f → invertible f
-
-
-joyal-equivs-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
-                        → is-joyal-equiv f → is-equiv f
 
 
 invertibles-are-joyal-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
