@@ -461,14 +461,10 @@ EX-equiv-to-set X Y (f , e) s x x' p p' = (G x x' p) ⁻¹ ∙ H ∙ G x x' p' w
     F x x' (ap g (ap f p')) ＝⟨ ap (F x x') ((ap-∘ f g p') ⁻¹) ⟩
     F x x' (ap (g ∘ f) p')  ∎
 
-EX-sections-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y)
-                        → has-retraction f
-                        → g ∼ f
-                        → has-retraction g
-EX-sections-closed-under-∼ = ?
+EX-sections-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-retraction f → g ∼ f
+                             → has-retraction g
+EX-sections-closed-under-∼ f g (r , i) e = (r , (λ x → (ap r (e x)) ∙ (i x)))
 
-EX-retractions-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y)
-                           → has-section f
-                           → g ∼ f
-                           → has-section g
-EX-retractions-closed-under-∼ = ?
+EX-retractions-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-section f → g ∼ f
+                                → has-section g
+EX-retractions-closed-under-∼ f g (s , i) e = (s , (λ x → (e (s x)) ∙ (i x)))
