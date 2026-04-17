@@ -469,13 +469,13 @@ EX-retractions-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) 
                                 → has-section g
 EX-retractions-closed-under-∼ f g (s , i) e = (s , (λ x → (e (s x)) ∙ (i x)))
 
+EX-one-inverse : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) (f : X → Y) (r s : Y → X) → (r ∘ f ∼ id) → (f ∘ s ∼ id) → r ∼ s
+EX-one-inverse X Y f r s i j y = ap r ((j y) ⁻¹) ∙ i (s y)
+
+
+
 {-
 
--inverse : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ )
-              (f : X → Y) (r s : Y → X)
-            → (r ∘ f ∼ id)
-            → (f ∘ s ∼ id)
-            → r ∼ s
 
 
 joyal-equivs-are-invertible : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
