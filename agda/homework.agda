@@ -468,3 +468,150 @@ EX-sections-closed-under-∼ f g (r , i) e = (r , (λ x → (ap r (e x)) ∙ (i 
 EX-retractions-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-section f → g ∼ f
                                 → has-section g
 EX-retractions-closed-under-∼ f g (s , i) e = (s , (λ x → (e (s x)) ∙ (i x)))
+
+{-
+
+-inverse : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ )
+              (f : X → Y) (r s : Y → X)
+            → (r ∘ f ∼ id)
+            → (f ∘ s ∼ id)
+            → r ∼ s
+
+
+joyal-equivs-are-invertible : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
+                            → is-joyal-equiv f → invertible f
+
+
+joyal-equivs-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
+                        → is-joyal-equiv f → is-equiv f
+
+
+invertibles-are-joyal-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
+                             → invertible f → is-joyal-equiv f
+
+equivs-are-joyal-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
+                        → is-equiv f → is-joyal-equiv f
+
+
+equivs-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {f g : X → Y}
+                      → is-equiv f
+                      → g ∼ f
+                      → is-equiv g
+
+
+equiv-to-singleton' : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
+                    → X ≃ Y → is-singleton X → is-singleton Y
+
+
+subtypes-of-sets-are-sets : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (m : X → Y)
+                          → left-cancellable m → is-set Y → is-set X
+
+
+pr₁-lc : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
+       → ((x : X) → is-subsingleton (A x))
+       → left-cancellable (λ (t : Σ A) → pr₁ t)
+
+
+subsets-of-sets-are-sets : (X : 𝓤 ̇ ) (A : X → 𝓥 ̇ )
+                         → is-set X
+                         → ((x : X) → is-subsingleton (A x))
+                         → is-set (Σ x ꞉ X , A x)
+
+
+to-subtype-＝ : {X : 𝓦 ̇ } {A : X → 𝓥 ̇ }
+               {x y : X} {a : A x} {b : A y}
+             → ((x : X) → is-subsingleton (A x))
+             → x ＝ y
+             → (x , a) ＝ (y , b)
+
+
+pr₁-is-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
+             → ((x : X) → is-singleton (A x))
+             → is-equiv (λ (t : Σ A) → pr₁ t)
+
+
+pr₁-≃ : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
+      → ((x : X) → is-singleton (A x))
+      → Σ A ≃ X
+
+pr₁-≃ i = pr₁ , pr₁-is-equiv i
+
+
+ΠΣ-distr-≃ : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } {P : (x : X) → A x → 𝓦 ̇ }
+           → (Π x ꞉ X , Σ a ꞉ A x , P x a)
+           ≃ (Σ f ꞉ Π A , Π x ꞉ X , P x (f x))
+
+
+Σ-assoc : {X : 𝓤 ̇ } {Y : X → 𝓥 ̇ } {Z : Σ Y → 𝓦 ̇ }
+        → Σ Z ≃ (Σ x ꞉ X , Σ y ꞉ Y x , Z (x , y))
+
+
+⁻¹-≃ : {X : 𝓤 ̇ } (x y : X) → (x ＝ y) ≃ (y ＝ x)
+
+
+singleton-types-≃ : {X : 𝓤 ̇ } (x : X) → singleton-type' x ≃ singleton-type x
+
+
+singletons-≃ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
+             → is-singleton X → is-singleton Y → X ≃ Y
+
+
+maps-of-singletons-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
+                              → is-singleton X → is-singleton Y → is-equiv f
+
+
+logically-equivalent-subsingletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ )
+                                                  → is-subsingleton X
+                                                  → is-subsingleton Y
+                                                  → X ⇔ Y
+                                                  → X ≃ Y
+
+singletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ )
+                          → is-singleton X
+                          → is-singleton Y
+                          → X ≃ Y
+
+
+NatΣ-fiber-equiv : {X : 𝓤 ̇ } (A : X → 𝓥 ̇ ) (B : X → 𝓦 ̇ ) (φ : Nat A B)
+                   (x : X) (b : B x)
+                 → fiber (φ x) b ≃ fiber (NatΣ φ) (x , b)
+
+
+NatΣ-equiv-gives-fiberwise-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } {B : X → 𝓦 ̇ }
+                                   (φ : Nat A B)
+                                 → is-equiv (NatΣ φ)
+                                 → ((x : X) → is-equiv (φ x))
+
+
+Σ-is-subsingleton : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
+                  → is-subsingleton X
+                  → ((x : X) → is-subsingleton (A x))
+                  → is-subsingleton (Σ A)
+
+
+×-is-singleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
+                  → is-singleton X
+                  → is-singleton Y
+                  → is-singleton (X × Y)
+
+
+×-is-subsingleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
+                  → is-subsingleton X
+                  → is-subsingleton Y
+                  → is-subsingleton (X × Y)
+
+×-is-subsingleton' : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
+                   → ((Y → is-subsingleton X) × (X → is-subsingleton Y))
+                   → is-subsingleton (X × Y)
+
+
+×-is-subsingleton'-back : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
+                        → is-subsingleton (X × Y)
+                        → (Y → is-subsingleton X) × (X → is-subsingleton Y)
+
+
+ap₂ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y → Z) {x x' : X} {y y' : Y}
+    → x ＝ x' → y ＝ y' → f x y ＝ f x' y'
+
+
+-}
