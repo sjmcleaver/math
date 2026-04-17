@@ -6,6 +6,7 @@ open ℕ-order
 open Arithmetic renaming (_+_ to _∔_ ; _×_ to _*_)
 
 
+
 -- rewrite ≤ using ℕ-induction and prove it is equivalent
 --
 
@@ -16,6 +17,7 @@ _≤'_ = ℕ-iteration (ℕ → 𝓤₀ ̇ ) (λ _ → 𝟙) (λ h → ℕ-recur
 ≤_eq_≤' 0 n = refl 𝟙
 ≤_eq_≤' (succ n) 0 = refl 𝟘
 ≤_eq_≤' (succ n) (succ m) = ≤_eq_≤' n m
+
 
 
 -- prove x ≤ y ⇔ Σ d : ℕ , x + d = y
@@ -43,6 +45,7 @@ ex_imp_le (succ n) 0 (d , h) = !𝟘 ((succ n) ≤ 0) (a h) where
 ex_imp_le (succ m) (succ n) (d , p) = ex_imp_le m n (d , succ-lc p)
 
 
+
 -- rewrite ℍ using 𝕁 without pattern matching
 --
 
@@ -60,11 +63,13 @@ ex_imp_le (succ m) (succ n) (d , p) = ex_imp_le m n (d , succ-lc p)
 ℍs-agreement x B b x (refl x) = refl b
 
 
+
 -- write 𝕁 in terms of transport
 --
 
 𝕁'' : {X : 𝓤 ̇ } → (A : (x y : X) → x ＝ y → 𝓥 ̇ ) → ((x : X) → A x x (refl x)) → (x y : X) → (p : x ＝ y) → A x y p
 𝕁'' A f x x (refl x) = transport (Σ-induction (A x)) (to-Σ-＝ (refl x , refl (refl x))) (f x)
+
 
 
 -- define a version of identity composition that transports using the first argument
@@ -76,6 +81,7 @@ p comp q = transport (_＝ rhs q) (inv (type-of (lhs p)) (lhs p) (rhs p) p) q wh
   inv X x x (refl x) = refl x
 
 
+
 -- prove that refl gives a left and right neutral element of identity composition
 --
 
@@ -84,6 +90,7 @@ refl-left-neutral (refl x) = refl (refl x)
 
 refl-right-neutral : {X : 𝓤 ̇ } {x y : X} (p : x ＝ y) → p ∙ (refl y)＝ p
 refl-right-neutral (refl y) = refl (refl y)
+
 
 
 -- prove that ℕ has decidable equality using ℕ-induction
@@ -115,6 +122,7 @@ succ-not-fixed (succ n) p = succ-not-fixed n (succ-lc p)
     )
 
 
+
 -- prove (X : 𝓤 ̇ ) → is-subsingleton X → ¬¬(is-singleton X + is-empty X)
 --
 
@@ -125,11 +133,13 @@ dn-EM : (X : 𝓤 ̇ ) → is-subsingleton X → ¬¬(is-singleton X + is-empty 
 dn-EM X f z = no-unicorns (X , (f , dM (is-singleton X) (is-empty X) z))
 
 
+
 -- prove (X : 𝓤 ̇ ) → (R : 𝓥 ̇ )  → ((X + (X → R)) → R) → R
 --
 
 dnR-EM : (X : 𝓤 ̇ ) → (R : 𝓥 ̇ ) → ((X + (X → R)) → R) → R
 dnR-EM _ _ f = (f ∘ inr) (f ∘ inl)
+
 
 
 -- define the type of groups
@@ -157,7 +167,8 @@ left-inverse-gives-right ((_ , _ , _·_ , e , ln , rn , a) , i , h) x =
     ix = i x
     iix = i (i x)
 
-inverse-is-unique : {𝓤 : Universe} → (((X , _ , op , e , _) , i , h) : Group 𝓤) → (j : X → X) → (left-inverse e j op) → i ∼ j
+inverse-is-unique : {𝓤 : Universe} → (((X , _ , op , e , _) , i , h) : Group 𝓤) → (j : X → X)
+                    → (left-inverse e j op) → i ∼ j
 inverse-is-unique ((X , s , _·_ , e , ln , rn , a) , i , h) j k x =
   i x                 ＝⟨ (rn (i x)) ⁻¹ ⟩
   (i x) · e           ＝⟨ ap ((i x) ·_) p ⟩
@@ -167,6 +178,7 @@ inverse-is-unique ((X , s , _·_ , e , ln , rn , a) , i , h) j k x =
   j x                 ∎ where
     p : e ＝ (x · (j x))
     p = ((left-inverse-gives-right ((X , s , _·_ , e , ln , rn , a) , j , k)) x) ⁻¹
+
 
 
 -- define the types of precategory, strict category, and category as given in the hott book
@@ -270,6 +282,7 @@ C-ℕ = (PC-ℕ , Iso→id , (λ a b → (F a b , G a b))) where
     ≤-is-set b b _ _ _ _)))
 
 
+
 -- define the type of topological spaces
 --
 {-
@@ -314,6 +327,7 @@ TopologicalSpace 𝓤 = Σ X ꞉ 𝓤 ̇ , (Σ T ꞉ ((X → 𝟚) → 𝟚) , (
 -}
 
 
+
 -- prove the associativity of identity compositions using 𝕁 and ℍ
 --
 
@@ -331,6 +345,7 @@ TopologicalSpace 𝓤 = Σ X ꞉ 𝓤 ̇ , (Σ T ꞉ ((X → 𝟚) → 𝟚) , (
     x t p r
 
 
+
 -- prove that 𝟙 has minimal hlevel 0, 𝟘 has minimal hlevel 1, and ℕ has minimal hlevel 0
 --
 
@@ -346,15 +361,17 @@ TopologicalSpace 𝓤 = Σ X ꞉ 𝓤 ̇ , (Σ T ꞉ ((X → 𝟚) → 𝟚) , (
   g (refl 0) = refl (refl 0)
 ℕ-is-set' 0 (succ n) p = !𝟘 _ (positive-not-zero n (p ⁻¹))
 ℕ-is-set' (succ n) 0 p = !𝟘 _ (positive-not-zero n p)
-ℕ-is-set' (succ m) (succ n) p q = (f m n p) ∙ (ap (ap succ) (ℕ-is-set' m n (ap pred p) (ap pred q))) ∙ ((f m n q) ⁻¹) where
-  f : (a b : ℕ) (p : succ a ＝ succ b) → p ＝ ap succ (ap pred p)
-  f a a (refl (succ a)) = refl (refl (succ a))
+ℕ-is-set' (succ m) (succ n) p q =
+  (f m n p) ∙ (ap (ap succ) (ℕ-is-set' m n (ap pred p) (ap pred q))) ∙ ((f m n q) ⁻¹) where
+    f : (a b : ℕ) (p : succ a ＝ succ b) → p ＝ ap succ (ap pred p)
+    f a a (refl (succ a)) = refl (refl (succ a))
 
 ℕ-is-not-hlevel-1 : ¬(ℕ is-of-hlevel 1)
 ℕ-is-not-hlevel-1 z = positive-not-zero 0 (pr₁ (z 1 0))
 
 ℕ-has-minimal-hlevel-2 : ℕ has-minimal-hlevel 2
 ℕ-has-minimal-hlevel-2 = (sets-are-of-hlevel-2 ℕ ℕ-is-set' , ℕ-is-not-hlevel-1)
+
 
 
 -- construct a term of ℕ ◁ ℕ using pred as the retraction. construct other terms of ℕ ◁ ℕ.
@@ -382,9 +399,9 @@ halve-retraction : ℕ ◁ ℕ
 halve-retraction = (halve , double , double-is-section)
 
 
+
 -- various exercises
 --
-
 
 EX-subsingleton-criterion : {X : 𝓤 ̇ } → (X → is-singleton X) → is-subsingleton X
 EX-subsingleton-criterion f x y = (((pr₂ (f x)) x) ⁻¹) ∙ ((pr₂ (f x)) y)
@@ -392,14 +409,11 @@ EX-subsingleton-criterion f x y = (((pr₂ (f x)) x) ⁻¹) ∙ ((pr₂ (f x)) y
 EX-subsingleton-criterion' : {X : 𝓤 ̇ } → (X → is-subsingleton X) → is-subsingleton X
 EX-subsingleton-criterion' f x = f x x
 
-
 EX-retract-of-subsingleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → Y ◁ X → is-subsingleton X → is-subsingleton Y
 EX-retract-of-subsingleton (r , s , i) f y z = ((i y) ⁻¹) ∙ (ap r (f (s y) (s z))) ∙ (i z)
 
-EX-lc-maps-reflect-subsingletons : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
-                              → left-cancellable f
-                              → is-subsingleton Y
-                              → is-subsingleton X
+EX-lc-maps-reflect-subsingletons : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → left-cancellable f → is-subsingleton Y
+                                   → is-subsingleton X
 EX-lc-maps-reflect-subsingletons f l s x x' = l (s (f x) (f x'))
 
 EX-sections-are-lc : {X : 𝓤 ̇ } {A : 𝓥 ̇ } (s : X → A) → has-retraction s → left-cancellable s
@@ -413,3 +427,48 @@ EX-equivs-have-retractions f e =
 EX-equivs-have-sections : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-equiv f → has-section f
 EX-equivs-have-sections f e = (λ y → pr₁ (pr₁ (e y))) , (λ y → pr₂ (pr₁ (e y)))
 
+EX-equivs-are-lc : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-equiv f → left-cancellable f
+EX-equivs-are-lc f e = EX-sections-are-lc f (EX-equivs-have-retractions f e)
+
+EX-equiv-to-subsingleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → X ≃ Y → is-subsingleton Y → is-subsingleton X
+EX-equiv-to-subsingleton (f , e) s = EX-retract-of-subsingleton (inverse f e , f , inverses-are-retractions f e) s
+
+EX-comp-inverses : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y) (g : Y → Z) (i : is-equiv f) (j : is-equiv g)
+                   (f' : Y → X) (g' : Z → Y) → f' ∼ inverse f i → g' ∼ inverse g j
+                   → f' ∘ g' ∼ inverse (g ∘ f) (∘-is-equiv j i)
+EX-comp-inverses f g i j f' g' u v z = (u (g' z)) ∙ (ap (inverse f i) (v z)) ∙ ((inverse-of-∘ f g i j) z)
+
+EX-equiv-to-set : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → X ≃ Y → is-set Y → is-set X
+EX-equiv-to-set X Y (f , e) s x x' p p' = (G x x' p) ⁻¹ ∙ H ∙ G x x' p' where
+  g = inverse f e
+
+  i : (t : X) → g (f t) ＝ t
+  i = inverses-are-retractions f e
+
+  F : (t t' : X) → g (f t) ＝ g (f t') → t ＝ t'
+  F t t' q = (i t) ⁻¹ ∙ q ∙ i t'
+
+  G : (t t' : X) → (q : t ＝ t') → F t t' (ap (g ∘ f) q) ＝ q
+  G t t (refl t) =
+    (i t) ⁻¹ ∙ refl ((g ∘ f) t) ∙ i t ＝⟨ refl-right ⟩
+    (i t) ⁻¹ ∙ i t                    ＝⟨ ⁻¹-left∙ (i t) ⟩
+    refl t                            ∎
+
+  H : F x x' (ap (g ∘ f) p) ＝ F x x' (ap (g ∘ f) p')
+  H =
+    F x x' (ap (g ∘ f) p)   ＝⟨ ap (F x x') (ap-∘ f g p) ⟩
+    F x x' (ap g (ap f p))  ＝⟨ ap ((F x x') ∘ (ap g)) (s (f x) (f x') (ap f p) (ap f p')) ⟩
+    F x x' (ap g (ap f p')) ＝⟨ ap (F x x') ((ap-∘ f g p') ⁻¹) ⟩
+    F x x' (ap (g ∘ f) p')  ∎
+
+EX-sections-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y)
+                        → has-retraction f
+                        → g ∼ f
+                        → has-retraction g
+EX-sections-closed-under-∼ = ?
+
+EX-retractions-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y)
+                           → has-section f
+                           → g ∼ f
+                           → has-section g
+EX-retractions-closed-under-∼ = ?
