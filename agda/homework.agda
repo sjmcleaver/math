@@ -410,20 +410,20 @@ halve-retraction = (halve , double , double-is-section)
 --
 
 EX-subsingleton-criterion : {X : 𝓤 ̇ } → (X → is-singleton X) → is-subsingleton X
-EX-subsingleton-criterion f x y = (((pr₂ (f x)) x) ⁻¹) ∙ ((pr₂ (f x)) y)
+EX-subsingleton-criterion f x y = ((pr₂ (f x)) x) ⁻¹ ∙ (pr₂ (f x)) y
 
 EX-subsingleton-criterion' : {X : 𝓤 ̇ } → (X → is-subsingleton X) → is-subsingleton X
 EX-subsingleton-criterion' f x = f x x
 
 EX-retract-of-subsingleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → Y ◁ X → is-subsingleton X → is-subsingleton Y
-EX-retract-of-subsingleton (r , s , i) f y z = ((i y) ⁻¹) ∙ (ap r (f (s y) (s z))) ∙ (i z)
+EX-retract-of-subsingleton (r , s , i) f y z = i y ⁻¹ ∙ ap r (f (s y) (s z)) ∙ i z
 
 EX-lc-maps-reflect-subsingletons : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → left-cancellable f → is-subsingleton Y
                                    → is-subsingleton X
 EX-lc-maps-reflect-subsingletons f l s x x' = l (s (f x) (f x'))
 
 EX-sections-are-lc : {X : 𝓤 ̇ } {A : 𝓥 ̇ } (s : X → A) → has-retraction s → left-cancellable s
-EX-sections-are-lc s (r , i) {x} {x'} p = ((i x) ⁻¹) ∙ (ap r p) ∙ (i x')
+EX-sections-are-lc s (r , i) {x} {x'} p = i x ⁻¹ ∙ ap r p ∙ i x'
 
 EX-equivs-have-retractions : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-equiv f → has-retraction f
 EX-equivs-have-retractions f e =
@@ -441,7 +441,7 @@ EX-equiv-to-subsingleton (f , e) s = EX-retract-of-subsingleton (inverse f e , f
 
 EX-comp-inverses : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y) (g : Y → Z) (i : is-equiv f) (j : is-equiv g) (f' : Y → X)
                    (g' : Z → Y) → f' ∼ inverse f i → g' ∼ inverse g j → f' ∘ g' ∼ inverse (g ∘ f) (∘-is-equiv j i)
-EX-comp-inverses f g i j f' g' u v z = (u (g' z)) ∙ (ap (inverse f i) (v z)) ∙ ((inverse-of-∘ f g i j) z)
+EX-comp-inverses f g i j f' g' u v z = u (g' z) ∙ ap (inverse f i) (v z) ∙ inverse-of-∘ f g i j z
 
 EX-equiv-to-set : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → X ≃ Y → is-set Y → is-set X
 EX-equiv-to-set X Y (f , e) s x x' p p' =
@@ -461,17 +461,15 @@ EX-equiv-to-set X Y (f , e) s x x' p p' =
 
     G : (t t' : X) → (q : t ＝ t') → F t t' (ap (g ∘ f) q) ＝ q
     G t t (refl t) =
-      (i t) ⁻¹ ∙ refl ((g ∘ f) t) ∙ i t ＝⟨ refl-right ⟩
-      (i t) ⁻¹ ∙ i t                    ＝⟨ ⁻¹-left∙ (i t) ⟩
-      refl t                            ∎
+      i t ⁻¹ ∙ refl ((g ∘ f) t) ∙ i t ＝⟨ refl-right ⟩
+      i t ⁻¹ ∙ i t                    ＝⟨ ⁻¹-left∙ (i t) ⟩
+      refl t                          ∎
 
-EX-sections-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-retraction f → g ∼ f
-                             → has-retraction g
-EX-sections-closed-under-∼ f g (r , i) e = (r , (λ x → (ap r (e x)) ∙ (i x)))
+EX-sections-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-retraction f → g ∼ f → has-retraction g
+EX-sections-closed-under-∼ f g (r , i) e = (r , (λ x → ap r (e x) ∙ i x))
 
-EX-retractions-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-section f → g ∼ f
-                                → has-section g
-EX-retractions-closed-under-∼ f g (s , i) e = (s , (λ x → (e (s x)) ∙ (i x)))
+EX-retractions-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-section f → g ∼ f → has-section g
+EX-retractions-closed-under-∼ f g (s , i) e = (s , (λ x → e (s x) ∙ i x))
 
 EX-one-inverse : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) (f : X → Y) (r s : Y → X) → (r ∘ f ∼ id) → (f ∘ s ∼ id) → r ∼ s
 EX-one-inverse X Y f r s i j y = ap r ((j y) ⁻¹) ∙ i (s y)
