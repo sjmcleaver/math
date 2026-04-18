@@ -281,7 +281,13 @@ C-ℕ = (PC-ℕ , Iso→id , (λ a b → (F a b , G a b))) where
     ≤-is-set a a _ _ _ _ ,
     ≤-is-set b b _ _ _ _)))
 
+{-
+PC-Set : (𝓤 : Universe) → Precategory 𝓤 𝓤
+PC-Set = ?
 
+C-Set : (𝓤 : Universe) → Category 𝓤 𝓤
+C-Set = ?
+-}
 
 -- define the type of topological spaces
 --
@@ -433,9 +439,8 @@ EX-equivs-are-lc f e = EX-sections-are-lc f (EX-equivs-have-retractions f e)
 EX-equiv-to-subsingleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → X ≃ Y → is-subsingleton Y → is-subsingleton X
 EX-equiv-to-subsingleton (f , e) s = EX-retract-of-subsingleton (inverse f e , f , inverses-are-retractions f e) s
 
-EX-comp-inverses : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y) (g : Y → Z) (i : is-equiv f) (j : is-equiv g)
-                   (f' : Y → X) (g' : Z → Y) → f' ∼ inverse f i → g' ∼ inverse g j
-                   → f' ∘ g' ∼ inverse (g ∘ f) (∘-is-equiv j i)
+EX-comp-inverses : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y) (g : Y → Z) (i : is-equiv f) (j : is-equiv g) (f' : Y → X)
+                   (g' : Z → Y) → f' ∼ inverse f i → g' ∼ inverse g j → f' ∘ g' ∼ inverse (g ∘ f) (∘-is-equiv j i)
 EX-comp-inverses f g i j f' g' u v z = (u (g' z)) ∙ (ap (inverse f i) (v z)) ∙ ((inverse-of-∘ f g i j) z)
 
 EX-equiv-to-set : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → X ≃ Y → is-set Y → is-set X
@@ -476,7 +481,9 @@ EX-joyal-equivs-are-invertible f ((s , i) , (r , j)) = (r , (j , (λ x → ap f 
   p = EX-one-inverse (domain f) (codomain f) f r s j i
 
 EX-joyal-equivs-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-joyal-equiv f → is-equiv f
-EX-joyal-equivs-are-equivs f ((s , i) , (r , j)) y = ((s y , i y) , ?)
+EX-joyal-equivs-are-equivs {X} {Y} f ((s , i) , (r , j)) = invertibles-are-equivs f (s , h , i) where
+  h : (x : domain f) → s (f x) ＝ x
+  h x = EX-one-inverse (domain f) (codomain f) f r s j i (f x) ⁻¹ ∙ j x
 
 
 {-
