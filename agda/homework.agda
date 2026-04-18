@@ -483,29 +483,51 @@ EX-joyal-equivs-are-equivs {X} {Y} f ((s , i) , (r , j)) = invertibles-are-equiv
   h : (x : domain f) → s (f x) ＝ x
   h x = EX-one-inverse (domain f) (codomain f) f r s j i (f x) ⁻¹ ∙ j x
 
+EX-invertibles-are-joyal-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → invertible f → is-joyal-equiv f
+EX-invertibles-are-joyal-equivs _ (g , i , j) = ((g , j) , (g , i))
+
+EX-equivs-are-joyal-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-equiv f → is-joyal-equiv f
+EX-equivs-are-joyal-equivs f e = EX-invertibles-are-joyal-equivs f (equivs-are-invertible f e)
+
+EX-equivs-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {f g : X → Y} → is-equiv f → g ∼ f → is-equiv g
+EX-equivs-closed-under-∼ {f = f} {g = g} e i = EX-joyal-equivs-are-equivs g
+  (EX-retractions-closed-under-∼ f g s i , EX-sections-closed-under-∼ f g r i) where
+    s = equivs-have-sections f e
+    r = equivs-have-retractions f e
+
+
+EX-equiv-to-singleton' : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → X ≃ Y → is-singleton X → is-singleton Y
+EX-equiv-to-singleton' {X = X} {Y = Y} (f , e) (x , i) = (f x , T) where
+  T : (y : Y) → f x ＝ y
+  T y =
+    f x               ＝⟨ ap f (i (inverse f e y)) ⟩ 
+    f (inverse f e y) ＝⟨ inverses-are-sections f e y ⟩
+    y                  ∎
+
+
+EX-subtypes-of-sets-are-sets : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (m : X → Y) → left-cancellable m → is-set Y → is-set X
+EX-subtypes-of-sets-are-sets m l s x x' = EX-lc-maps-reflect-subsingletons (ap m) L (s (m x) (m x')) where
+
+  L : left-cancellable (ap m)
+  L {p} {p'} q = {!!}
+
+  -- q : ap m p ＝ ap m p'
+
+  -- p = ap n (ap m p)
+  --   = ap n (ap m p')
+  --   = p'
 
 {-
 
+ap m is lc
+ap m : (x ＝ x) → (f x ＝ f x)
 
-invertibles-are-joyal-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
-                             → invertible f → is-joyal-equiv f
+lc reflects subsingleton
 
-equivs-are-joyal-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
-                        → is-equiv f → is-joyal-equiv f
-
-
-equivs-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {f g : X → Y}
-                      → is-equiv f
-                      → g ∼ f
-                      → is-equiv g
+-}
 
 
-equiv-to-singleton' : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
-                    → X ≃ Y → is-singleton X → is-singleton Y
-
-
-subtypes-of-sets-are-sets : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (m : X → Y)
-                          → left-cancellable m → is-set Y → is-set X
+{-
 
 
 pr₁-lc : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
