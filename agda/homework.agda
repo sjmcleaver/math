@@ -476,6 +476,7 @@ EX-one-inverse X Y f r s i j y = ap r ((j y) ⁻¹) ∙ i (s y)
 
 EX-joyal-equivs-are-invertible : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-joyal-equiv f → invertible f
 EX-joyal-equivs-are-invertible f ((s , i) , (r , j)) = (r , (j , (λ x → ap f (p x) ∙ (i x)))) where
+  p : r ∼ s
   p = EX-one-inverse (domain f) (codomain f) f r s j i
 
 EX-joyal-equivs-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-joyal-equiv f → is-equiv f
@@ -516,15 +517,12 @@ EX-subsets-of-sets-are-sets : (X : 𝓤 ̇ ) (A : X → 𝓥 ̇ ) → is-set X �
                               → is-set (Σ x ꞉ X , A x)
 EX-subsets-of-sets-are-sets x A s i = EX-subtypes-of-sets-are-sets pr₁ (pr₁-lc i) s
 
+
+EX-to-subtype-＝ : {X : 𝓦 ̇ } {A : X → 𝓥 ̇ } {x y : X} {a : A x} {b : A y}
+                   → ((x : X) → is-subsingleton (A x)) → x ＝ y → (x , a) ＝ (y , b)
+EX-to-subtype-＝ C p = to-Σ-＝ (p , C (rhs p) _ _)
+
 {-
-
-
-to-subtype-＝ : {X : 𝓦 ̇ } {A : X → 𝓥 ̇ }
-               {x y : X} {a : A x} {b : A y}
-             → ((x : X) → is-subsingleton (A x))
-             → x ＝ y
-             → (x , a) ＝ (y , b)
-
 
 pr₁-is-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
              → ((x : X) → is-singleton (A x))
