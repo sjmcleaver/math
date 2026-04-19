@@ -495,7 +495,6 @@ EX-equivs-closed-under-∼ {f = f} {g = g} e i = EX-joyal-equivs-are-equivs g
     s = equivs-have-sections f e
     r = equivs-have-retractions f e
 
-
 EX-equiv-to-singleton' : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → X ≃ Y → is-singleton X → is-singleton Y
 EX-equiv-to-singleton' {X = X} {Y = Y} (f , e) (x , i) = (f x , T) where
   T : (y : Y) → f x ＝ y
@@ -504,41 +503,20 @@ EX-equiv-to-singleton' {X = X} {Y = Y} (f , e) (x , i) = (f x , T) where
     f (inverse f e y) ＝⟨ inverses-are-sections f e y ⟩
     y                  ∎
 
-
 EX-subtypes-of-sets-are-sets : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (m : X → Y) → left-cancellable m → is-set Y → is-set X
-EX-subtypes-of-sets-are-sets m l s x x' = EX-lc-maps-reflect-subsingletons (ap m) L (s (m x) (m x')) where
+EX-subtypes-of-sets-are-sets m i s x = Hedberg x A where
+  A : (x' : domain m) → wconstant-endomap (x ＝ x')
+  A x' = (λ p → i (ap m p)) , (λ p p' → ap i (s (m x) (m x') (ap m p) (ap m p')))
 
-  L : left-cancellable (ap m)
-  L {p} {p'} q = {!!}
 
-  -- q : ap m p ＝ ap m p'
+EX-pr₁-lc : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } → ((x : X) → is-subsingleton (A x)) → left-cancellable (λ (t : Σ A) → pr₁ t)
+EX-pr₁-lc s p = to-Σ-＝ (p , s _ _ _)
 
-  -- p = ap n (ap m p)
-  --   = ap n (ap m p')
-  --   = p'
-
-{-
-
-ap m is lc
-ap m : (x ＝ x) → (f x ＝ f x)
-
-lc reflects subsingleton
-
--}
-
+EX-subsets-of-sets-are-sets : (X : 𝓤 ̇ ) (A : X → 𝓥 ̇ ) → is-set X → ((x : X) → is-subsingleton (A x))
+                              → is-set (Σ x ꞉ X , A x)
+EX-subsets-of-sets-are-sets x A s i = EX-subtypes-of-sets-are-sets pr₁ (pr₁-lc i) s
 
 {-
-
-
-pr₁-lc : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
-       → ((x : X) → is-subsingleton (A x))
-       → left-cancellable (λ (t : Σ A) → pr₁ t)
-
-
-subsets-of-sets-are-sets : (X : 𝓤 ̇ ) (A : X → 𝓥 ̇ )
-                         → is-set X
-                         → ((x : X) → is-subsingleton (A x))
-                         → is-set (Σ x ꞉ X , A x)
 
 
 to-subtype-＝ : {X : 𝓦 ̇ } {A : X → 𝓥 ̇ }
