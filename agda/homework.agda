@@ -24,12 +24,12 @@ _≤'_ = ℕ-iteration (ℕ → 𝓤₀ ̇ ) (λ _ → 𝟙) (λ h → ℕ-recur
 --
 
 le_imp_ex : (x y : ℕ) → x ≤ y → Σ (λ d → d ∔ x ＝ y)
-le_imp_ex 0 0 h = (0 , refl 0)
-le_imp_ex (succ n) 0 h = (0 , !𝟘 (0 ∔ (succ n) ＝ 0) h)
-le_imp_ex (succ n) (succ m) h = (pr₁ s , ap succ (pr₂ s)) where
+le_imp_ex 0 0 h = 0 , refl 0
+le_imp_ex (succ n) 0 h = 0 , !𝟘 (0 ∔ (succ n) ＝ 0) h
+le_imp_ex (succ n) (succ m) h = pr₁ s , ap succ (pr₂ s) where
   s :  Σ (λ d → (d ∔ n) ＝ m)
   s = le_imp_ex n m h
-le_imp_ex 0 (succ n) h = (succ n , p (succ n)) where
+le_imp_ex 0 (succ n) h = succ n , p (succ n) where
   p : (n : ℕ) -> (n ∔ 0) ＝ n
   p 0 = refl 0
   p (succ n) = ap succ (p n)
@@ -85,11 +85,11 @@ p comp q = transport (_＝ rhs q) (inv (type-of (lhs p)) (lhs p) (rhs p) p) q wh
 -- prove that refl gives a left and right neutral element of identity composition
 --
 
-refl-left-neutral : {X : 𝓤 ̇ } {x y : X} (p : x ＝ y) → (refl x) ∙ p ＝ p
+refl-left-neutral : {X : 𝓤 ̇ } {x y : X} (p : x ＝ y) → refl x ∙ p ＝ p
 refl-left-neutral (refl x) = refl (refl x)
 
-refl-right-neutral : {X : 𝓤 ̇ } {x y : X} (p : x ＝ y) → p ∙ (refl y)＝ p
-refl-right-neutral (refl y) = refl (refl y)
+refl-right-neutral : {X : 𝓤 ̇ } {x y : X} (p : x ＝ y) → p ∙ refl y ＝ p
+refl-right-neutral (refl x) = refl (refl x)
 
 
 
@@ -127,7 +127,7 @@ succ-not-fixed (succ n) p = succ-not-fixed n (succ-lc p)
 --
 
 dM : (X : 𝓤 ̇ ) → (Y : 𝓥 ̇ ) → ¬(X + Y) → (¬ X × ¬ Y)
-dM _ _ f = (f ∘ inl , f ∘ inr)
+dM _ _ f = f ∘ inl , f ∘ inr
 
 dn-EM : (X : 𝓤 ̇ ) → is-subsingleton X → ¬¬(is-singleton X + is-empty X)
 dn-EM X f z = no-unicorns (X , (f , dM (is-singleton X) (is-empty X) z))
@@ -146,17 +146,17 @@ dnR-EM _ _ f = (f ∘ inr) (f ∘ inl)
 --
 
 left-inverse : {X : 𝓤 ̇ } → X → (X → X) → (X → X → X) → 𝓤 ̇ 
-left-inverse e i _·_ = ∀ x → (i x) · x ＝ e 
+left-inverse e i _·_ = ∀ x → i x · x ＝ e 
 
 right-inverse : {X : 𝓤 ̇ } → X → (X → X) → (X → X → X) → 𝓤 ̇
-right-inverse e i _·_ = ∀ x → x · (i x) ＝ e
+right-inverse e i _·_ = ∀ x → x · i x ＝ e
 
 Group : (𝓤 : Universe) → 𝓤 ⁺ ̇
 Group 𝓤 = Σ (X , _ , op , e , _) ꞉ (monoids.Monoid 𝓤) , (Σ i ꞉ (X → X) , left-inverse e i op)
 
-left-inverse-gives-right : {𝓤 : Universe} → (((_ , _ , · , e , _ , _ , _) , i , h) : Group 𝓤) → right-inverse e i ·
+left-inverse-gives-right : {𝓤 : Universe} → (((_ , _ , · , e , _) , i , h) : Group 𝓤) → right-inverse e i ·
 left-inverse-gives-right ((_ , _ , _·_ , e , ln , rn , a) , i , h) x =
-  x · ix                ＝⟨ (ln (x · ix)) ⁻¹ ⟩
+  x · ix                ＝⟨ ln (x · ix) ⁻¹ ⟩
   e · (x · ix)          ＝⟨ ap (_· (x · ix)) (h ix ⁻¹) ⟩
   (iix · ix) · (x · ix) ＝⟨ a (iix · ix) x ix ⁻¹ ⟩
   ((iix · ix) · x) · ix ＝⟨ ap (_· ix) (a iix ix x) ⟩
@@ -177,7 +177,7 @@ inverse-is-unique ((X , s , _·_ , e , ln , rn , a) , i , h) j k x =
   e · (j x)           ＝⟨ ln (j x) ⟩
   j x                 ∎ where
     p : e ＝ (x · (j x))
-    p = ((left-inverse-gives-right ((X , s , _·_ , e , ln , rn , a) , j , k)) x) ⁻¹
+    p = (left-inverse-gives-right ((X , s , _·_ , e , ln , rn , a) , j , k)) x ⁻¹
 
 
 
@@ -243,7 +243,7 @@ open basic-arithmetic-and-order
 𝟙-is-set' : is-set 𝟙
 𝟙-is-set' ⋆ ⋆ (refl ⋆) (refl ⋆) = refl (refl ⋆)
 
-≤-is-set : (a b : ℕ) → (is-set (a ≤ b))
+≤-is-set : (a b : ℕ) → is-set (a ≤ b)
 ≤-is-set 0 0 = 𝟙-is-set'
 ≤-is-set 0 (succ n) = 𝟙-is-set'
 ≤-is-set (succ n) 0 = λ z _ → !𝟘 _ z
@@ -256,22 +256,22 @@ open basic-arithmetic-and-order
 ≤-is-subsingleton (succ m) (succ n) = ≤-is-subsingleton m n
 
 PC-ℕ : Precategory 𝓤₀ 𝓤₀
-PC-ℕ = (ℕ , _≤_ , ≤-refl , ≤-trans ,
+PC-ℕ = ℕ , _≤_ , ≤-refl , ≤-trans ,
   (λ a b f → (
     (≤-is-set a b) , 
     ≤-is-subsingleton a b (≤-trans a a b (≤-refl a) f) f ,
     ≤-is-subsingleton a b (≤-trans a b b f (≤-refl b)) f
-  )))
+  ))
 
 SC-ℕ : StrictCategory 𝓤₀ 𝓤₀
-SC-ℕ = (PC-ℕ , ℕ-is-set)
+SC-ℕ = PC-ℕ , ℕ-is-set
 
 C-ℕ : Category 𝓤₀ 𝓤₀
-C-ℕ = (PC-ℕ , Iso→id , (λ a b → (F a b , G a b))) where
-  Iso→id : (a b : ℕ) → (Iso PC-ℕ a b) → (a ＝ b)
+C-ℕ = PC-ℕ , Iso→id , (λ a b → (F a b , G a b)) where
+  Iso→id : (a b : ℕ) → Iso PC-ℕ a b → a ＝ b
   Iso→id a b f = ≤-anti a b (pr₁ f) (pr₁ (pr₂ f))
 
-  F : (a b : ℕ) → (p : a ＝ b) → (Iso→id a b (Id→iso PC-ℕ a b p)) ＝ p
+  F : (a b : ℕ) → (p : a ＝ b) → Iso→id a b (Id→iso PC-ℕ a b p) ＝ p
   F a b p = ℕ-is-set a b (Iso→id a b (Id→iso PC-ℕ a b p)) p
 
   G : (a b : ℕ) → (f : Iso PC-ℕ a b) → (Id→iso PC-ℕ a b (Iso→id a b f)) ＝ f
