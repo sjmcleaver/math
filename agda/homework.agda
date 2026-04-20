@@ -507,7 +507,7 @@ EX-equiv-to-singleton' {X = X} {Y = Y} (f , e) (x , i) = (f x , T) where
 EX-subtypes-of-sets-are-sets : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (m : X → Y) → left-cancellable m → is-set Y → is-set X
 EX-subtypes-of-sets-are-sets m i s x = Hedberg x A where
   A : (x' : domain m) → wconstant-endomap (x ＝ x')
-  A x' = (λ p → i (ap m p)) , (λ p p' → ap i (s (m x) (m x') (ap m p) (ap m p')))
+  A x' = i ∘ (ap m) , (λ p p' → ap i (s (m x) (m x') (ap m p) (ap m p')))
 
 
 EX-pr₁-lc : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } → ((x : X) → is-subsingleton (A x)) → left-cancellable (λ (t : Σ A) → pr₁ t)
@@ -517,16 +517,21 @@ EX-subsets-of-sets-are-sets : (X : 𝓤 ̇ ) (A : X → 𝓥 ̇ ) → is-set X �
                               → is-set (Σ x ꞉ X , A x)
 EX-subsets-of-sets-are-sets x A s i = EX-subtypes-of-sets-are-sets pr₁ (pr₁-lc i) s
 
-
 EX-to-subtype-＝ : {X : 𝓦 ̇ } {A : X → 𝓥 ̇ } {x y : X} {a : A x} {b : A y}
                    → ((x : X) → is-subsingleton (A x)) → x ＝ y → (x , a) ＝ (y , b)
 EX-to-subtype-＝ C p = to-Σ-＝ (p , C (rhs p) _ _)
 
-{-
+EX-pr₁-is-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } → ((x : X) → is-singleton (A x)) → is-equiv (λ (t : Σ A) → pr₁ t)
+--EX-pr₁-is-equiv S x = ((x , pr₁ (C x) ) , refl x) , (λ a → to-Σ-＝ (to-Σ-＝ ({!!} , {!!}) , {!!}))
 
-pr₁-is-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
-             → ((x : X) → is-singleton (A x))
-             → is-equiv (λ (t : Σ A) → pr₁ t)
+EX-pr₁-is-equiv {A = A} S = invertibles-are-equivs pr₁
+  ((λ t → (t , center (A t) (S t))) , (λ s → to-Σ-＝ (refl (pr₁ s) ,  centrality (A (pr₁ s)) (S (pr₁ s)) (pr₂ s))) , refl)
+
+--a : is-singleton (fiber pr₁ x)
+
+
+
+{-
 
 
 pr₁-≃ : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
