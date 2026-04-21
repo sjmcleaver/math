@@ -522,63 +522,93 @@ EX-to-subtype-＝ : {X : 𝓦 ̇ } {A : X → 𝓥 ̇ } {x y : X} {a : A x} {b :
 EX-to-subtype-＝ C p = to-Σ-＝ (p , C (rhs p) _ _)
 
 EX-pr₁-is-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } → ((x : X) → is-singleton (A x)) → is-equiv (λ (t : Σ A) → pr₁ t)
---EX-pr₁-is-equiv S x = ((x , pr₁ (C x) ) , refl x) , (λ a → to-Σ-＝ (to-Σ-＝ ({!!} , {!!}) , {!!}))
-
 EX-pr₁-is-equiv {A = A} S = invertibles-are-equivs pr₁
   ((λ t → (t , center (A t) (S t))) , (λ s → to-Σ-＝ (refl (pr₁ s) ,  centrality (A (pr₁ s)) (S (pr₁ s)) (pr₂ s))) , refl)
 
---a : is-singleton (fiber pr₁ x)
+EX-pr₁-≃ : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } → ((x : X) → is-singleton (A x)) → Σ A ≃ X
+EX-pr₁-≃ i = pr₁ , pr₁-is-equiv i
 
+EX-ΠΣ-distr-≃ : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } {P : (x : X) → A x → 𝓦 ̇ }
+                → (Π x ꞉ X , Σ a ꞉ A x , P x a) ≃ (Σ f ꞉ Π A , Π x ꞉ X , P x (f x))
+EX-ΠΣ-distr-≃ {𝓤} {𝓥} {𝓦} {X} {A} {P} = invertibility-gives-≃ F (G , refl , refl) where
+  F : (Π x ꞉ X , Σ a ꞉ A x , P x a) → (Σ f ꞉ Π A , Π x ꞉ X , P x (f x))
+  F f = (λ x → pr₁ (f x)) , (λ x → pr₂ (f x))
+
+  G : (Σ f ꞉ Π A , Π x ꞉ X , P x (f x)) → (Π x ꞉ X , Σ a ꞉ A x , P x a)
+  G y = λ x → ((pr₁ y) x , (pr₂ y) x)
+
+EX-Σ-assoc : {X : 𝓤 ̇ } {Y : X → 𝓥 ̇ } {Z : Σ Y → 𝓦 ̇ } → Σ Z ≃ (Σ x ꞉ X , Σ y ꞉ Y x , Z (x , y))
+EX-Σ-assoc {𝓤} {𝓥} {𝓦} {X} {Y} {Z} = invertibility-gives-≃ F (G , refl , refl)  where
+  F : Σ Z → (Σ x ꞉ X , Σ y ꞉ Y x , Z (x , y))
+  F s = pr₁ (pr₁ s) , pr₂ (pr₁ s) , pr₂ s
+
+  G : (Σ x ꞉ X , Σ y ꞉ Y x , Z (x , y)) → Σ Z
+  G s = (pr₁ s , pr₁ (pr₂ s)) , pr₂ (pr₂ s)
+
+EX-⁻¹-≃ : {X : 𝓤 ̇ } (x y : X) → (x ＝ y) ≃ (y ＝ x)
+EX-⁻¹-≃ x y = _⁻¹ , invertibles-are-equivs _⁻¹ (_⁻¹ , ⁻¹-involutive , ⁻¹-involutive)
+
+EX-singleton-types-≃ : {X : 𝓤 ̇ } (x : X) → singleton-type' x ≃ singleton-type x
+EX-singleton-types-≃ x = Σ-cong (EX-⁻¹-≃ x)
+
+EX-singletons-≃ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → is-singleton X → is-singleton Y → X ≃ Y
+EX-singletons-≃ (c , C) (d , D) = invertibility-gives-≃ (λ _ → d) ((λ _ → c) , C , D)
+
+EX-maps-of-singletons-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-singleton X → is-singleton Y → is-equiv f
+EX-maps-of-singletons-are-equivs f (c , C) (_ , D) = invertibles-are-equivs f ((λ _ → c) , C , (λ x → D (f c) ⁻¹ ∙ D x))
+
+EX-logically-equivalent-subsingletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → is-subsingleton X → is-subsingleton Y → X ⇔ Y → X ≃ Y
+EX-logically-equivalent-subsingletons-are-equivalent X Y u v (f , g) = invertibility-gives-≃ f (g , (λ x → u _ x) , (λ x → v _ x))
+
+EX-singletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → is-singleton X → is-singleton Y → X ≃ Y
+EX-singletons-are-equivalent X Y = EX-singletons-≃
+
+EX-NatΣ-fiber-equiv : {X : 𝓤 ̇ } (A : X → 𝓥 ̇ ) (B : X → 𝓦 ̇ ) (φ : Nat A B) (x : X) (b : B x)
+                       → fiber (φ x) b ≃ fiber (NatΣ φ) (x , b)
+EX-NatΣ-fiber-equiv {X = X} A B φ x b = invertibility-gives-≃ (λ (a , p) → (x , a) , to-Σ-＝' p) (G , u , v) where
+  H : (x x' : X) (t : x' ＝ x) → (a : A x') → (b : B x) → (i : transport B t (φ x' a) ＝ b)
+      → φ x (transport A t a) ＝ transport B t (φ x' a)
+  H x x (refl x) a b i = refl _
+
+  G : fiber (NatΣ φ) (x , b) → fiber (φ x) b
+  G ((x' , a) , e) = transport A (pr₁ (from-Σ-＝ e)) a , (H x x' (pr₁ (from-Σ-＝ e)) a b (pr₂ (from-Σ-＝ e)) ∙ (pr₂ (from-Σ-＝ e)))
+
+  Z : (a : A x) → (p : φ x a ＝ b) → pr₁ (from-Σ-＝ (to-Σ-＝' p)) ＝ refl x
+  Z a p = {!!}
+
+
+  -- from-Σ-＝ (to-Σ-＝' p) = from-Σ-＝ (ap (λ - → (x , -)) p)
+
+  u : (s : fiber (φ x) b) → G ((x , pr₁ s) , to-Σ-＝' (pr₂ s)) ＝ s
+  u (a , p) = {!!}
+
+
+ --  G ((x , a) , to-Σ-＝' p) =  a , p
+
+ -- transport A (pr₁ (from-Σ-＝ ( to-Σ-＝' p))) a , (H x x (pr₁ (from-Σ-＝ (to-Σ-＝' p))) a b (pr₂ (from-Σ-＝ e)) ∙ (pr₂ (from-Σ-＝ to-Σ-＝ p)))
+ -- = 
+
+
+  -- T : G ((x , a) , to-Σ-＝ (refl x , p)) ＝ a , p
+  -- T : a , refl _ ∙ p ＝ a , p
+
+  v : (s : fiber (NatΣ φ) (x , b)) → ((x , pr₁ (G s)) , to-Σ-＝' (pr₂ (G s))) ＝ s
+  v ((x , a) , e) = {!!}
+
+
+
+-- need some
+-- E : (Σ a : A x , ϕ x a ＝ b) ≃ (Σ (x' , a) : Σ A , (x' , ϕ x' a) ＝ (x , b))
+
+
+
+
+-- fiber (ϕ x) b = (Σ a : A x , ϕ x a ＝ b)
+
+-- fiber (NatΣ ϕ) (x , b) = (Σ (x' , a) : Σ A , (x' , ϕ x' a) ＝ (x , b))
 
 
 {-
-
-
-pr₁-≃ : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
-      → ((x : X) → is-singleton (A x))
-      → Σ A ≃ X
-
-pr₁-≃ i = pr₁ , pr₁-is-equiv i
-
-
-ΠΣ-distr-≃ : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } {P : (x : X) → A x → 𝓦 ̇ }
-           → (Π x ꞉ X , Σ a ꞉ A x , P x a)
-           ≃ (Σ f ꞉ Π A , Π x ꞉ X , P x (f x))
-
-
-Σ-assoc : {X : 𝓤 ̇ } {Y : X → 𝓥 ̇ } {Z : Σ Y → 𝓦 ̇ }
-        → Σ Z ≃ (Σ x ꞉ X , Σ y ꞉ Y x , Z (x , y))
-
-
-⁻¹-≃ : {X : 𝓤 ̇ } (x y : X) → (x ＝ y) ≃ (y ＝ x)
-
-
-singleton-types-≃ : {X : 𝓤 ̇ } (x : X) → singleton-type' x ≃ singleton-type x
-
-
-singletons-≃ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
-             → is-singleton X → is-singleton Y → X ≃ Y
-
-
-maps-of-singletons-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y)
-                              → is-singleton X → is-singleton Y → is-equiv f
-
-
-logically-equivalent-subsingletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ )
-                                                  → is-subsingleton X
-                                                  → is-subsingleton Y
-                                                  → X ⇔ Y
-                                                  → X ≃ Y
-
-singletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ )
-                          → is-singleton X
-                          → is-singleton Y
-                          → X ≃ Y
-
-
-NatΣ-fiber-equiv : {X : 𝓤 ̇ } (A : X → 𝓥 ̇ ) (B : X → 𝓦 ̇ ) (φ : Nat A B)
-                   (x : X) (b : B x)
-                 → fiber (φ x) b ≃ fiber (NatΣ φ) (x , b)
 
 
 NatΣ-equiv-gives-fiberwise-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } {B : X → 𝓦 ̇ }
