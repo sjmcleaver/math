@@ -475,14 +475,12 @@ EX-one-inverse : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) (f : X → Y) (r s : Y → X) →
 EX-one-inverse X Y f r s i j y = ap r ((j y) ⁻¹) ∙ i (s y)
 
 EX-joyal-equivs-are-invertible : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-joyal-equiv f → invertible f
-EX-joyal-equivs-are-invertible f ((s , i) , (r , j)) = (r , (j , (λ x → ap f (p x) ∙ (i x)))) where
-  p : r ∼ s
-  p = EX-one-inverse (domain f) (codomain f) f r s j i
+EX-joyal-equivs-are-invertible f ((s , i) , (r , j)) =
+  (r , (j , (λ x → ap f ((EX-one-inverse (domain f) (codomain f) f r s j i) x) ∙ (i x))))
 
 EX-joyal-equivs-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-joyal-equiv f → is-equiv f
-EX-joyal-equivs-are-equivs {X} {Y} f ((s , i) , (r , j)) = invertibles-are-equivs f (s , h , i) where
-  h : (x : domain f) → s (f x) ＝ x
-  h x = EX-one-inverse (domain f) (codomain f) f r s j i (f x) ⁻¹ ∙ j x
+EX-joyal-equivs-are-equivs {X} {Y} f ((s , i) , (r , j)) =
+  invertibles-are-equivs f (s , (λ x → EX-one-inverse (domain f) (codomain f) f r s j i (f x) ⁻¹ ∙ j x) , i)
 
 EX-invertibles-are-joyal-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → invertible f → is-joyal-equiv f
 EX-invertibles-are-joyal-equivs _ (g , i , j) = ((g , j) , (g , i))
@@ -496,8 +494,8 @@ EX-equivs-closed-under-∼ {f = f} {g = g} e i = EX-joyal-equivs-are-equivs g
     s = equivs-have-sections f e
     r = equivs-have-retractions f e
 
-EX-equiv-to-singleton' : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → X ≃ Y → is-singleton X → is-singleton Y
-EX-equiv-to-singleton' {X = X} {Y = Y} (f , e) (x , i) = (f x , T) where
+EX-equiv-to-singleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → X ≃ Y → is-singleton X → is-singleton Y
+EX-equiv-to-singleton {X = X} {Y = Y} (f , e) (x , i) = (f x , T) where
   T : (y : Y) → f x ＝ y
   T y =
     f x               ＝⟨ ap f (i (inverse f e y)) ⟩ 
@@ -557,19 +555,21 @@ EX-singletons-≃ (c , C) (d , D) = invertibility-gives-≃ (λ _ → d) ((λ _ 
 EX-maps-of-singletons-are-equivs : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f : X → Y) → is-singleton X → is-singleton Y → is-equiv f
 EX-maps-of-singletons-are-equivs f (c , C) (_ , D) = invertibles-are-equivs f ((λ _ → c) , C , (λ x → D (f c) ⁻¹ ∙ D x))
 
-EX-logically-equivalent-subsingletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → is-subsingleton X → is-subsingleton Y → X ⇔ Y → X ≃ Y
-EX-logically-equivalent-subsingletons-are-equivalent X Y u v (f , g) = invertibility-gives-≃ f (g , (λ x → u _ x) , (λ x → v _ x))
+EX-logically-equivalent-subsingletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → is-subsingleton X → is-subsingleton Y
+                                                       → X ⇔ Y → X ≃ Y
+EX-logically-equivalent-subsingletons-are-equivalent X Y u v (f , g) =
+  invertibility-gives-≃ f (g , (λ x → u _ x) , (λ x → v _ x))
 
 EX-singletons-are-equivalent : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → is-singleton X → is-singleton Y → X ≃ Y
 EX-singletons-are-equivalent X Y = EX-singletons-≃
 
 EX-NatΣ-fiber-equiv : {X : 𝓤 ̇ } (A : X → 𝓥 ̇ ) (B : X → 𝓦 ̇ ) (φ : Nat A B) (x : X) (b : B x)
                        → fiber (φ x) b ≃ fiber (NatΣ φ) (x , b)
-EX-NatΣ-fiber-equiv {X = X} A B φ x b = ≃-sym
+EX-NatΣ-fiber-equiv A B φ x b = ≃-sym
   ((fiber (NatΣ φ) (x , b))                                                ≃⟨ Σ-cong (λ (ξ , α) → Σ-＝-≃ (ξ , φ ξ α) (x , b)) ⟩
    (Σ (x' , a') ꞉ (Σ A) , (Σ p ꞉ (x' ＝ x) , transport B p (φ x' a') ＝ b))             ≃⟨ EX-Σ-assoc ⟩
-   (Σ x' ꞉ X , (Σ a' ꞉ (A x') , (Σ p ꞉ (x' ＝ x) , transport B p (φ x' a') ＝ b)))      ≃⟨ Σ-cong (λ _ → Σ-flip) ⟩
-   (Σ x' ꞉ X , (Σ p ꞉ (x' ＝ x) , (Σ a' ꞉ (A x') , transport B p (φ x' a') ＝ b)))      ≃⟨ ≃-sym EX-Σ-assoc ⟩
+   (Σ x' ꞉ _ , (Σ a' ꞉ (A x') , (Σ p ꞉ (x' ＝ x) , transport B p (φ x' a') ＝ b)))      ≃⟨ Σ-cong (λ _ → Σ-flip) ⟩
+   (Σ x' ꞉ _ , (Σ p ꞉ (x' ＝ x) , (Σ a' ꞉ (A x') , transport B p (φ x' a') ＝ b)))      ≃⟨ ≃-sym EX-Σ-assoc ⟩
    (Σ (x' , p) ꞉ (singleton-type x) , (Σ a' ꞉ (A x') , transport B p (φ x' a') ＝ b))   ≃⟨ ≃-sym (F , E) ⟩
    (fiber (φ x) b)                                                                      ■)  where
 
@@ -579,7 +579,7 @@ EX-NatΣ-fiber-equiv {X = X} A B φ x b = ≃-sym
   E : (η : (Σ (x' , p) ꞉ (singleton-type x) , (Σ a' ꞉ A x' , transport B p (φ x' a') ＝ b))) → is-singleton (fiber F η)
   E ((x , refl x) , (a , r)) = (((a , r) , refl ((x , refl x) , (a , r))) , (λ ((α , ρ) , q) → to-Σ-＝ ((e₀ ((α , ρ) , q)) , e₁ ((α , ρ) , q)))) where
     S : is-set (singleton-type x)
-    S = singletons-are-sets (singleton-type x) (singleton-types-are-singletons X x)
+    S = singletons-are-sets (singleton-type x) (singleton-types-are-singletons _ x)
 
     e₀ : (((α , ρ) , q) : fiber F ((x , refl x) , (a , r))) → (a , r) ＝ (α , ρ)
     e₀ ((α , ρ) , q) = transport (λ Q → transport (λ (ξ , π) → Σ a ꞉ A ξ , transport B π (φ ξ a) ＝ b) Q (α , ρ) ＝ (a , r)) (S (x , refl x) (x , refl x) (pr₁ (from-Σ-＝ q)) (refl (x , refl x))) (pr₂ (from-Σ-＝ q)) ⁻¹
@@ -587,44 +587,25 @@ EX-NatΣ-fiber-equiv {X = X} A B φ x b = ≃-sym
     e₁ : (((α , ρ) , q) : fiber F ((x , refl x) , (a , r))) → transport _ (e₀ ((α , ρ) , q)) (refl ((x , refl x) , (a , r))) ＝ q
     e₁ ((a , r) , (refl ((x , refl x) , (a , r)))) = refl (refl ((x , refl x) , (a , r)))
 
-{-
+EX-NatΣ-equiv-gives-fiberwise-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } {B : X → 𝓦 ̇ } (φ : Nat A B) → is-equiv (NatΣ φ)
+                                      → ((x : X) → is-equiv (φ x))
+EX-NatΣ-equiv-gives-fiberwise-equiv φ E x b = EX-equiv-to-singleton (≃-sym (EX-NatΣ-fiber-equiv _ _ φ x b)) (E (x , b))
 
+EX-Σ-is-subsingleton : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } → is-subsingleton X → ((x : X) → is-subsingleton (A x)) → is-subsingleton (Σ A)
+EX-Σ-is-subsingleton S F (x , a) (x' , a') = to-Σ-＝ (S x x' , (F x') (transport _ (S x x') a) a')
 
-NatΣ-equiv-gives-fiberwise-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } {B : X → 𝓦 ̇ }
-                                   (φ : Nat A B)
-                                 → is-equiv (NatΣ φ)
-                                 → ((x : X) → is-equiv (φ x))
+EX-×-is-singleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → is-singleton X → is-singleton Y → is-singleton (X × Y)
+EX-×-is-singleton (c , f) (d , g) = (c , d) , (λ (x' , y') → to-×-＝ (f x' , g y'))
 
+EX-×-is-subsingleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → is-subsingleton X → is-subsingleton Y → is-subsingleton (X × Y)
+EX-×-is-subsingleton F G (x , y) (x' , y') = to-×-＝ (F x x' , G y y')
 
-Σ-is-subsingleton : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ }
-                  → is-subsingleton X
-                  → ((x : X) → is-subsingleton (A x))
-                  → is-subsingleton (Σ A)
+EX-×-is-subsingleton' : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → ((Y → is-subsingleton X) × (X → is-subsingleton Y)) → is-subsingleton (X × Y)
+EX-×-is-subsingleton' (F , G) (x , y) (x' , y') = to-×-＝ (F y x x' , G x y y')
 
+EX-×-is-subsingleton'-back : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } → is-subsingleton (X × Y) → (Y → is-subsingleton X) × (X → is-subsingleton Y)
+EX-×-is-subsingleton'-back F =
+  (λ y x x' → pr₁ (from-×-＝ (F (x , y) (x' , y)))) , (λ x y y' → pr₂ (from-×-＝ (F (x , y) (x , y'))))
 
-×-is-singleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
-                  → is-singleton X
-                  → is-singleton Y
-                  → is-singleton (X × Y)
-
-
-×-is-subsingleton : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
-                  → is-subsingleton X
-                  → is-subsingleton Y
-                  → is-subsingleton (X × Y)
-
-×-is-subsingleton' : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
-                   → ((Y → is-subsingleton X) × (X → is-subsingleton Y))
-                   → is-subsingleton (X × Y)
-
-
-×-is-subsingleton'-back : {X : 𝓤 ̇ } {Y : 𝓥 ̇ }
-                        → is-subsingleton (X × Y)
-                        → (Y → is-subsingleton X) × (X → is-subsingleton Y)
-
-
-ap₂ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y → Z) {x x' : X} {y y' : Y}
-    → x ＝ x' → y ＝ y' → f x y ＝ f x' y'
-
-
--}
+EX-ap₂ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y → Z) {x x' : X} {y y' : Y} → x ＝ x' → y ＝ y' → f x y ＝ f x' y'
+EX-ap₂ f (refl _) (refl _) = refl _ 
