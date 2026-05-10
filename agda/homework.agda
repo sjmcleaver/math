@@ -565,48 +565,27 @@ EX-singletons-are-equivalent X Y = EX-singletons-≃
 
 EX-NatΣ-fiber-equiv : {X : 𝓤 ̇ } (A : X → 𝓥 ̇ ) (B : X → 𝓦 ̇ ) (φ : Nat A B) (x : X) (b : B x)
                        → fiber (φ x) b ≃ fiber (NatΣ φ) (x , b)
-EX-NatΣ-fiber-equiv {X = X} A B φ x b = invertibility-gives-≃ (λ (a , p) → (x , a) , to-Σ-＝' p) (G , u , v) where
-  H : (x x' : X) (t : x' ＝ x) → (a : A x') → (b : B x) → (i : transport B t (φ x' a) ＝ b)
-      → φ x (transport A t a) ＝ transport B t (φ x' a)
-  H x x (refl x) a b i = refl _
+EX-NatΣ-fiber-equiv {X = X} A B φ x b = ≃-sym
+  ((fiber (NatΣ φ) (x , b))                                                ≃⟨ Σ-cong (λ (ξ , α) → Σ-＝-≃ (ξ , φ ξ α) (x , b)) ⟩
+   (Σ (x' , a') ꞉ (Σ A) , (Σ p ꞉ (x' ＝ x) , transport B p (φ x' a') ＝ b))             ≃⟨ EX-Σ-assoc ⟩
+   (Σ x' ꞉ X , (Σ a' ꞉ (A x') , (Σ p ꞉ (x' ＝ x) , transport B p (φ x' a') ＝ b)))      ≃⟨ Σ-cong (λ _ → Σ-flip) ⟩
+   (Σ x' ꞉ X , (Σ p ꞉ (x' ＝ x) , (Σ a' ꞉ (A x') , transport B p (φ x' a') ＝ b)))      ≃⟨ ≃-sym EX-Σ-assoc ⟩
+   (Σ (x' , p) ꞉ (singleton-type x) , (Σ a' ꞉ (A x') , transport B p (φ x' a') ＝ b))   ≃⟨ ≃-sym (F , E) ⟩
+   (fiber (φ x) b)                                                                      ■)  where
 
-  G : fiber (NatΣ φ) (x , b) → fiber (φ x) b
-  G ((x' , a) , e) = transport A (pr₁ (from-Σ-＝ e)) a , (H x x' (pr₁ (from-Σ-＝ e)) a b (pr₂ (from-Σ-＝ e)) ∙ (pr₂ (from-Σ-＝ e)))
+  F : fiber (φ x) b → (Σ (x' , p) ꞉ (singleton-type x) , (Σ a' ꞉ A x' , transport B p (φ x' a') ＝ b))
+  F (a , r) = ((x , refl x) , (a , r))
 
-  Z : (a : A x) → (p : φ x a ＝ b) → pr₁ (from-Σ-＝ (to-Σ-＝' p)) ＝ refl x
-  Z a p = {!!}
+  E : (η : (Σ (x' , p) ꞉ (singleton-type x) , (Σ a' ꞉ A x' , transport B p (φ x' a') ＝ b))) → is-singleton (fiber F η)
+  E ((x , refl x) , (a , r)) = (((a , r) , refl ((x , refl x) , (a , r))) , (λ ((α , ρ) , q) → to-Σ-＝ ((e₀ ((α , ρ) , q)) , e₁ ((α , ρ) , q)))) where
+    S : is-set (singleton-type x)
+    S = singletons-are-sets (singleton-type x) (singleton-types-are-singletons X x)
 
+    e₀ : (((α , ρ) , q) : fiber F ((x , refl x) , (a , r))) → (a , r) ＝ (α , ρ)
+    e₀ ((α , ρ) , q) = transport (λ Q → transport (λ (ξ , π) → Σ a ꞉ A ξ , transport B π (φ ξ a) ＝ b) Q (α , ρ) ＝ (a , r)) (S (x , refl x) (x , refl x) (pr₁ (from-Σ-＝ q)) (refl (x , refl x))) (pr₂ (from-Σ-＝ q)) ⁻¹
 
-  -- from-Σ-＝ (to-Σ-＝' p) = from-Σ-＝ (ap (λ - → (x , -)) p)
-
-  u : (s : fiber (φ x) b) → G ((x , pr₁ s) , to-Σ-＝' (pr₂ s)) ＝ s
-  u (a , p) = {!!}
-
-
- --  G ((x , a) , to-Σ-＝' p) =  a , p
-
- -- transport A (pr₁ (from-Σ-＝ ( to-Σ-＝' p))) a , (H x x (pr₁ (from-Σ-＝ (to-Σ-＝' p))) a b (pr₂ (from-Σ-＝ e)) ∙ (pr₂ (from-Σ-＝ to-Σ-＝ p)))
- -- = 
-
-
-  -- T : G ((x , a) , to-Σ-＝ (refl x , p)) ＝ a , p
-  -- T : a , refl _ ∙ p ＝ a , p
-
-  v : (s : fiber (NatΣ φ) (x , b)) → ((x , pr₁ (G s)) , to-Σ-＝' (pr₂ (G s))) ＝ s
-  v ((x , a) , e) = {!!}
-
-
-
--- need some
--- E : (Σ a : A x , ϕ x a ＝ b) ≃ (Σ (x' , a) : Σ A , (x' , ϕ x' a) ＝ (x , b))
-
-
-
-
--- fiber (ϕ x) b = (Σ a : A x , ϕ x a ＝ b)
-
--- fiber (NatΣ ϕ) (x , b) = (Σ (x' , a) : Σ A , (x' , ϕ x' a) ＝ (x , b))
-
+    e₁ : (((α , ρ) , q) : fiber F ((x , refl x) , (a , r))) → transport _ (e₀ ((α , ρ) , q)) (refl ((x , refl x) , (a , r))) ＝ q
+    e₁ ((a , r) , (refl ((x , refl x) , (a , r)))) = refl (refl ((x , refl x) , (a , r)))
 
 {-
 
