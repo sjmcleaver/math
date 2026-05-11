@@ -608,4 +608,20 @@ EX-×-is-subsingleton'-back F =
   (λ y x x' → pr₁ (from-×-＝ (F (x , y) (x' , y)))) , (λ x y y' → pr₂ (from-×-＝ (F (x , y) (x , y'))))
 
 EX-ap₂ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } (f : X → Y → Z) {x x' : X} {y y' : Y} → x ＝ x' → y ＝ y' → f x y ＝ f x' y'
-EX-ap₂ f (refl _) (refl _) = refl _ 
+EX-ap₂ _ (refl _) (refl _) = refl _
+
+
+
+-- prove that function extensionality and f being an equivalence implies (_∘ f) is an equivalence
+
+precomp-of-equiv-is-equiv : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } → (fe : funext 𝓥 𝓦) → (fe' : funext 𝓤 𝓦)
+                            → (f : X → Y) → is-equiv f → is-equiv (_∘ f)
+precomp-of-equiv-is-equiv {Z = Z} fe fe' f E = invertibles-are-equivs (_∘ f) (G , (λ h → fe (ϕ h)) , (λ h → fe' (γ h))) where
+  G : (h : domain f → Z) → codomain f → Z
+  G h = h ∘ (inverse f E)
+
+  ϕ : (h : codomain f → Z) → (y : codomain f) → (G (h ∘ f)) y ＝ h y
+  ϕ h y = ap h (inverses-are-sections f E y)
+
+  γ : (h : domain f → Z) → (x : domain f) → ((G h) ∘ f) x ＝ h x
+  γ h x = ap h (inverses-are-retractions f E x)
