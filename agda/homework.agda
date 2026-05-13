@@ -625,3 +625,44 @@ precomp-of-equiv-is-equiv {Z = Z} fe fe' f E = invertibles-are-equivs (_∘ f) (
 
   γ : (h : domain f → Z) → (x : domain f) → ((G h) ∘ f) x ＝ h x
   γ h x = ap h (inverses-are-retractions f E x)
+
+
+
+-- give a fiberwise involutive equivalence (mirror: (n : ℕ) → Fin n → Fin n) that is not the identity
+--
+
+module EX-mirror (ua : Univalence) where
+  Fin : ℕ → 𝓤₀ ̇
+  Fin = finite-types.Fin (univalence-gives-global-hfunext ua)
+
+  plusOne : (n : ℕ) → Fin n → Fin (succ n)
+  plusOne 0 _ = inr ⋆
+  plusOne (succ n) (inr ⋆) = inr ⋆
+  plusOne (succ n) (inl μ) = inl (plusOne n μ)
+
+  mirror : (n : ℕ) → Fin n → Fin n
+  mirror 0 = id
+  mirror 1 = id
+  mirror (succ (succ n)) (inr ⋆) = inl (mirror (succ n) (inr ⋆))
+  mirror (succ (succ n)) (inl μ) = plusOne (succ n) (mirror (succ n) μ)
+
+  plusMirror : (n : ℕ) → (μ : Fin n) → plusOne n (mirror n μ) ＝ mirror (succ n) (inl μ)
+  plusMirror 0 z = !𝟘 _ z
+  plusMirror (succ n) (inr ⋆) = refl _
+  plusMirror (succ n) (inl μ) = refl _
+
+  mirrorPlus : (n : ℕ) → (μ : Fin n) →  mirror (succ n) (plusOne n μ) ＝ inl (mirror n μ)
+  mirrorPlus 0 z = !𝟘 _ z
+  mirrorPlus (succ n) (inr ⋆) = refl _
+  mirrorPlus (succ n) (inl μ) = (ap (plusOne (succ n)) (mirrorPlus n μ)) ∙ (ap inl (plusMirror n μ))
+
+  mirror-is-involution : (n : ℕ) → (mirror n) ∘ (mirror n) ∼ id
+  mirror-is-involution 0 _ = refl _
+  mirror-is-involution 1 _ = refl _
+  mirror-is-involution (succ (succ n)) (inr ⋆) = ap (plusOne (succ n)) (mirror-is-involution (succ n) (inr ⋆))
+  mirror-is-involution (succ (succ n)) (inl μ) = (mirrorPlus (succ n) (mirror (succ n) μ)) ∙ (ap inl (mirror-is-involution (succ n) μ))
+
+
+
+
+
