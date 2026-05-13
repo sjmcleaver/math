@@ -661,13 +661,11 @@ module EX-mirror (ua : Univalence) where
   mirror (succ (succ n)) (inr ⋆) = inl (mirror (succ n) (inr ⋆))
   mirror (succ (succ n)) (inl μ) = plusOne (succ n) (mirror (succ n) μ)
 
-  plusMirror : (n : ℕ) → (μ : Fin n) → plusOne n (mirror n μ) ＝ mirror (succ n) (inl μ)
-  plusMirror 0 z = !𝟘 _ z
+  plusMirror : (n : ℕ) → (plusOne n) ∘ (mirror n) ∼ (mirror (succ n)) ∘ inl
   plusMirror (succ n) (inr ⋆) = refl _
   plusMirror (succ n) (inl μ) = refl _
 
-  mirrorPlus : (n : ℕ) → (μ : Fin n) →  mirror (succ n) (plusOne n μ) ＝ inl (mirror n μ)
-  mirrorPlus 0 z = !𝟘 _ z
+  mirrorPlus : (n : ℕ) → (mirror (succ n)) ∘ (plusOne n) ∼ inl ∘ (mirror n)
   mirrorPlus (succ n) (inr ⋆) = refl _
   mirrorPlus (succ n) (inl μ) = (ap (plusOne (succ n)) (mirrorPlus n μ)) ∙ (ap inl (plusMirror n μ))
 
@@ -683,7 +681,6 @@ module EX-mirror (ua : Univalence) where
 -- prove that (Fin n) is a set
 
   fin-is-set : (n : ℕ) → is-set (Fin n)
-  fin-is-set 0 x = !𝟘 _ x
   fin-is-set 1 = singletons-are-sets (𝟘 + 𝟙) (inr ⋆ , h) where
     h : (μ : 𝟘 + 𝟙) → (inr ⋆) ＝ μ
     h (inr ⋆) = refl (inr ⋆)
