@@ -312,7 +312,7 @@ intersection : {X : 𝓤 ̇ } → P X → P X → P X
 intersection u v x = (u x) or (v x)
 
 Union : {X : 𝓤 ̇ } → (C : P (P X)) → P X
-Union C x = ?
+Union C x = ∃ u : P X , ((u x) × (C u)
 
 -- need
 -- (x : X) → (C : P (P X)) → decidable (Σ u ꞉ P X , (C u) and (u x))
@@ -587,6 +587,21 @@ EX-NatΣ-fiber-equiv A B φ x b = ≃-sym
     e₁ : (((α , ρ) , q) : fiber F ((x , refl x) , (a , r))) → transport _ (e₀ ((α , ρ) , q)) (refl ((x , refl x) , (a , r))) ＝ q
     e₁ ((a , r) , (refl ((x , refl x) , (a , r)))) = refl (refl ((x , refl x) , (a , r)))
 
+EX-NatΣ-fiber-equiv' : {X : 𝓤 ̇ } (A : X → 𝓥 ̇ ) (B : X → 𝓦 ̇ ) (φ : Nat A B) (x : X) (b : B x)
+                       → fiber (φ x) b ≃ fiber (NatΣ φ) (x , b)
+EX-NatΣ-fiber-equiv' A B φ x b = F , invertibles-are-equivs F (G , γ , ϕ) where
+  F : fiber (φ x) b → fiber (NatΣ φ) (x , b)
+  F (a , refl _) = (x , a) , refl _
+
+  G : fiber (NatΣ φ) (x , b) → fiber (φ x) b
+  G ((x , a) , refl _) = a , refl _
+
+  ϕ : F ∘ G ∼ id
+  ϕ (_ , refl _) = refl _
+
+  γ : G ∘ F ∼ id
+  γ (_ , refl _) = refl _
+
 EX-NatΣ-equiv-gives-fiberwise-equiv : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } {B : X → 𝓦 ̇ } (φ : Nat A B) → is-equiv (NatΣ φ)
                                       → ((x : X) → is-equiv (φ x))
 EX-NatΣ-equiv-gives-fiberwise-equiv φ E x b = EX-equiv-to-singleton (≃-sym (EX-NatΣ-fiber-equiv _ _ φ x b)) (E (x , b))
@@ -664,5 +679,14 @@ module EX-mirror (ua : Univalence) where
 
 
 
+-- prove that (Fin n) is a set
+
+  fin-is-set : (n : ℕ) → is-set (Fin n)
+  fin-is-set 0 x = !𝟘 _ x
+  fin-is-set 1 = singletons-are-sets (𝟘 + 𝟙) (inr ⋆ , h) where
+    h : (μ : 𝟘 + 𝟙) → (inr ⋆) ＝ μ
+    h (inr ⋆) = refl (inr ⋆)
+  fin-is-set (succ (succ n)) (inr ⋆) (inr ⋆) (refl (inr ⋆)) p = {!!}
+  fin-is-set (succ (succ n)) (inl μ) (inl μ) (refl (inl μ)) p = {!!}
 
 
