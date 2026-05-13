@@ -677,7 +677,8 @@ module EX-mirror (ua : Univalence) where
   mirror-is-involution (succ (succ n)) (inr ⋆) = ap (plusOne (succ n)) (mirror-is-involution (succ n) (inr ⋆))
   mirror-is-involution (succ (succ n)) (inl μ) = (mirrorPlus (succ n) (mirror (succ n) μ)) ∙ (ap inl (mirror-is-involution (succ n) μ))
 
-
+  Mirror : Fin ＝ Fin
+  Mirror = (univalence-gives-global-dfunext ua (λ n → Eq→Id (ua _) _ _ (mirror n , invertibles-are-equivs (mirror n) (mirror n , mirror-is-involution n , mirror-is-involution n))))
 
 -- prove that (Fin n) is a set
 
