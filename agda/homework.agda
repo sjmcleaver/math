@@ -507,7 +507,6 @@ EX-subtypes-of-sets-are-sets m i s x = Hedberg x A where
   A : (x' : domain m) → wconstant-endomap (x ＝ x')
   A x' = i ∘ (ap m) , (λ p p' → ap i (s (m x) (m x') (ap m p) (ap m p')))
 
-
 EX-pr₁-lc : {X : 𝓤 ̇ } {A : X → 𝓥 ̇ } → ((x : X) → is-subsingleton (A x)) → left-cancellable (λ (t : Σ A) → pr₁ t)
 EX-pr₁-lc s p = to-Σ-＝ (p , s _ _ _)
 
@@ -680,11 +679,14 @@ module EX-mirror (ua : Univalence) where
 
 -- prove that (Fin n) is a set
 
+  inl-is-lc : {A : 𝓤 ̇ } {B : 𝓥 ̇ } {a a' : A} → inl {Y = B}  a ＝ inl a' → a ＝ a'
+  inl-is-lc (refl (inl a)) = refl a
+
+  fin-has-decidable-equality : (n : ℕ) →  has-decidable-equality (Fin n)
+  fin-has-decidable-equality (succ n) (inr ⋆) (inr ⋆) = inl (refl (inr ⋆))
+  fin-has-decidable-equality (succ n) (inr ⋆) (inl _) = inr (≠-sym inl-inr-disjoint-images)
+  fin-has-decidable-equality (succ n) (inl _) (inr ⋆) = inr inl-inr-disjoint-images
+  fin-has-decidable-equality (succ n) (inl μ) (inl ν) = +-induction (λ _ → decidable (inl μ ＝ inl ν)) (λ p → inl (ap inl p)) (λ z → inr (λ p → z (inl-is-lc p))) (fin-has-decidable-equality n μ ν)
+
   fin-is-set : (n : ℕ) → is-set (Fin n)
-  fin-is-set 1 = singletons-are-sets (𝟘 + 𝟙) (inr ⋆ , h) where
-    h : (μ : 𝟘 + 𝟙) → (inr ⋆) ＝ μ
-    h (inr ⋆) = refl (inr ⋆)
-  fin-is-set (succ (succ n)) (inr ⋆) (inr ⋆) (refl (inr ⋆)) p = {!!}
-  fin-is-set (succ (succ n)) (inl μ) (inl μ) (refl (inl μ)) p = {!!}
-
-
+  fin-is-set n = hedberg (fin-has-decidable-equality n)
