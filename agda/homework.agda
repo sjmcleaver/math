@@ -645,9 +645,12 @@ precomp-of-equiv-is-equiv {Z = Z} fe fe' f E = invertibles-are-equivs (_∘ f) (
 -- give a fiberwise involutive equivalence (mirror: (n : ℕ) → Fin n → Fin n) that is not the identity
 --
 
-module EX-mirror (ua : Univalence) where
+module EX-finite-types (ua : Univalence) where
+  hfe : hfunext 𝓤₀ 𝓤₁
+  hfe = univalence-gives-global-hfunext ua
+
   Fin : ℕ → 𝓤₀ ̇
-  Fin = finite-types.Fin (univalence-gives-global-hfunext ua)
+  Fin = finite-types.Fin hfe
 
   plusOne : (n : ℕ) → Fin n → Fin (succ n)
   plusOne 0 _ = inr ⋆
@@ -677,7 +680,18 @@ module EX-mirror (ua : Univalence) where
   Mirror : Fin ＝ Fin
   Mirror = (univalence-gives-global-dfunext ua (λ n → Eq→Id (ua _) _ _ (mirror n , invertibles-are-equivs (mirror n) (mirror n , mirror-is-involution n , mirror-is-involution n))))
 
--- prove that (Fin n) is a set
+  -- which  equality (Fin ＝ Fin')  does the universal property of Fin give?
+
+  fin' : ∃! Fin' ꞉ (ℕ → 𝓤₀ ̇ ) , (Fin' 0 ＝ 𝟘) × ((n : ℕ) → Fin' (succ n) ＝ 𝟙 + Fin' n)
+  fin' = ℕ-is-nno hfe (𝓤₀ ̇ ) 𝟘 (𝟙 +_)
+
+  Fin' : ℕ → 𝓤₀ ̇
+  Fin' = pr₁ (center _ fin')
+
+  universal-Fin-Fin'-equality : Fin ＝ Fin'
+  universal-Fin-Fin'-equality = ?
+
+  -- prove that (Fin n) is a set
 
   inl-is-lc : {A : 𝓤 ̇ } {B : 𝓥 ̇ } {a a' : A} → inl {Y = B}  a ＝ inl a' → a ＝ a'
   inl-is-lc (refl (inl a)) = refl a
