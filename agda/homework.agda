@@ -711,23 +711,23 @@ module EX-finite-types (ua : Univalence) where
   inl-is-lc : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {x x' : X} → inl {Y = Y}  x ＝ inl x' → x ＝ x'
   inl-is-lc (refl (inl a)) = refl a
 
-  fin-has-decidable-equality : (n : ℕ) →  has-decidable-equality (Fin n)
-  fin-has-decidable-equality (succ n) (inr ⋆) (inr ⋆) = inl (refl (inr ⋆))
-  fin-has-decidable-equality (succ n) (inr ⋆) (inl _) = inr (≠-sym inl-inr-disjoint-images)
-  fin-has-decidable-equality (succ n) (inl _) (inr ⋆) = inr inl-inr-disjoint-images
-  fin-has-decidable-equality (succ n) (inl μ) (inl ν) = +-induction (λ _ → decidable (inl μ ＝ inl ν)) (λ p → inl (ap inl p)) (λ z → inr (λ p → z (inl-is-lc p))) (fin-has-decidable-equality n μ ν)
+  Fin-has-decidable-equality : (n : ℕ) →  has-decidable-equality (Fin n)
+  Fin-has-decidable-equality (succ n) (inr ⋆) (inr ⋆) = inl (refl (inr ⋆))
+  Fin-has-decidable-equality (succ n) (inr ⋆) (inl _) = inr (≠-sym inl-inr-disjoint-images)
+  Fin-has-decidable-equality (succ n) (inl _) (inr ⋆) = inr inl-inr-disjoint-images
+  Fin-has-decidable-equality (succ n) (inl μ) (inl ν) = +-induction (λ _ → decidable (inl μ ＝ inl ν)) (λ p → inl (ap inl p)) (λ z → inr (λ p → z (inl-is-lc p))) (Fin-has-decidable-equality n μ ν)
 
-  fin-is-set : (n : ℕ) → is-set (Fin n)
-  fin-is-set n = hedberg (fin-has-decidable-equality n)
+  Fin-is-set : (n : ℕ) → is-set (Fin n)
+  Fin-is-set n = hedberg (Fin-has-decidable-equality n)
 
 
   -- prove that Fin is left cancellable but not an embedding
 
-  fin-is-lc : (n m : ℕ) → Fin n ＝ Fin m → n ＝ m
-  fin-is-lc 0 0 _ = refl 0
-  fin-is-lc (succ n) 0 p = !𝟘 _ (Id→fun p (inr ⋆))
-  fin-is-lc 0 (succ n) p = !𝟘 _ (Id→fun (p ⁻¹) (inr ⋆))
-  fin-is-lc (succ n) (succ m) p = ap succ (fin-is-lc n m (F n m p)) where
+  Fin-is-lc : (n m : ℕ) → Fin n ＝ Fin m → n ＝ m
+  Fin-is-lc 0 0 _ = refl 0
+  Fin-is-lc (succ n) 0 p = !𝟘 _ (Id→fun p (inr ⋆))
+  Fin-is-lc 0 (succ n) p = !𝟘 _ (Id→fun (p ⁻¹) (inr ⋆))
+  Fin-is-lc (succ n) (succ m) p = ap succ (Fin-is-lc n m (F n m p)) where
     F : (n m : ℕ) → Fin (succ n) ＝ Fin (succ m) → Fin n ＝ Fin m
     F n m q = Eq→Id (ua _) _ _ (g , e) where
       ϕ : Fin (succ n) ≃ Fin (succ m)
@@ -744,13 +744,13 @@ module EX-finite-types (ua : Univalence) where
       V x p z = H m ((pr₁ ϕ) (inl x)) z
 
       A : Fin n → (pr₁ ϕ) (inr ⋆) ＝ inr ⋆ → Fin m
-      A x p = +-recursion (U x p) (V x p) (fin-has-decidable-equality (succ m) ((pr₁ ϕ) (inl x)) (inr ⋆))
+      A x p = +-recursion (U x p) (V x p) (Fin-has-decidable-equality (succ m) ((pr₁ ϕ) (inl x)) (inr ⋆))
 
       B : (pr₁ ϕ) (inr ⋆) ≠ inr ⋆ → Fin m
       B z = H m ((pr₁ ϕ) (inr ⋆)) z
 
       g : Fin n → Fin m
-      g x = +-recursion (A x) B (fin-has-decidable-equality (succ m) ((pr₁ ϕ) (inr ⋆)) (inr ⋆))
+      g x = +-recursion (A x) B (Fin-has-decidable-equality (succ m) ((pr₁ ϕ) (inr ⋆)) (inr ⋆))
 
       e : is-equiv g
       e y = {!!}
