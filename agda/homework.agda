@@ -226,7 +226,6 @@ Id→iso C X X (refl X) = (ident C X , ident C X , p , p) where
   p : (cmp C X X X) (ident C X) (ident C X) ＝ ident C X
   p = pr₁ (pr₂ ((pr₂ (pr₂ (pr₂ (pr₂ C)))) X X (ident C X)))
 
-
 Category : (𝓤 𝓥 : Universe) → (𝓤 ⁺ ⊔ 𝓥 ⁺) ̇
 Category 𝓤 𝓥 =
   Σ C ꞉ Precategory 𝓤 𝓥 , (
@@ -677,8 +676,28 @@ module EX-finite-types (ua : Univalence) where
   mirror-is-involution (succ (succ n)) (inr ⋆) = ap (plusOne (succ n)) (mirror-is-involution (succ n) (inr ⋆))
   mirror-is-involution (succ (succ n)) (inl μ) = (mirrorPlus (succ n) (mirror (succ n) μ)) ∙ (ap inl (mirror-is-involution (succ n) μ))
 
+  mirror-equiv : (n : ℕ) → Fin n ≃ Fin n
+  mirror-equiv n = mirror n , invertibles-are-equivs (mirror n) (mirror n , mirror-is-involution n , mirror-is-involution n)
+
   Mirror : Fin ＝ Fin
-  Mirror = (univalence-gives-global-dfunext ua (λ n → Eq→Id (ua _) _ _ (mirror n , invertibles-are-equivs (mirror n) (mirror n , mirror-is-involution n , mirror-is-involution n))))
+  Mirror = hfunext-gives-dfunext hfe (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))
+
+  Mirror-is-not-refl : Mirror ≠ refl Fin
+  Mirror-is-not-refl z = inl-inr-disjoint-images (p ∙ ap (λ x → (Id→fun x) (inr ⋆)) (ap (ap (λ - → - 2)) z)) where
+    q : happly Fin Fin
+          (inverse (happly Fin Fin) (hfe Fin Fin)
+              (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))) ＝ (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))
+    q = inverses-are-sections (happly Fin Fin) (hfe Fin Fin) (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))
+
+    s : Id→fun (happly Fin Fin (inverse (happly Fin Fin) (hfe Fin Fin) (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))) 2) (inr ⋆) ＝ Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆)
+    s = ap (λ - → Id→fun (- 2) (inr ⋆)) q
+
+    t : Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆) ＝ inl (inr ⋆)
+    t = ap (λ - → (pr₁ -) (inr ⋆)) (inverses-are-sections (Id→Eq _ _) (ua _ _ _) (mirror-equiv 2))
+
+    p : inl (inr ⋆) ＝ Id→fun (happly Fin Fin (inverse (happly Fin Fin) (hfe Fin Fin) (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))) 2) (inr ⋆)
+    p = (s ∙ t) ⁻¹
+
 
   -- which  equality (Fin ＝ Fin')  does the universal property of Fin give?
 
@@ -689,11 +708,11 @@ module EX-finite-types (ua : Univalence) where
   Fin' = pr₁ (center _ fin')
 
   universal-Fin-Fin'-equality : Fin ＝ Fin'
-  universal-Fin-Fin'-equality = ?
+  universal-Fin-Fin'-equality = {!!}
 
   -- prove that (Fin n) is a set
 
-  inl-is-lc : {A : 𝓤 ̇ } {B : 𝓥 ̇ } {a a' : A} → inl {Y = B}  a ＝ inl a' → a ＝ a'
+  inl-is-lc : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {x x' : X} → inl {Y = Y}  x ＝ inl x' → x ＝ x'
   inl-is-lc (refl (inl a)) = refl a
 
   fin-has-decidable-equality : (n : ℕ) →  has-decidable-equality (Fin n)
