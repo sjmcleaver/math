@@ -683,21 +683,16 @@ module EX-finite-types (ua : Univalence) where
   Mirror = hfunext-gives-dfunext hfe (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))
 
   Mirror-is-not-refl : Mirror ≠ refl Fin
-  Mirror-is-not-refl z = inl-inr-disjoint-images (p ∙ ap (λ x → (Id→fun x) (inr ⋆)) (ap (ap (λ - → - 2)) z)) where
-    q : happly Fin Fin
-          (inverse (happly Fin Fin) (hfe Fin Fin)
-              (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))) ＝ (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))
-    q = inverses-are-sections (happly Fin Fin) (hfe Fin Fin) (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))
+  Mirror-is-not-refl z = inl-inr-disjoint-images ((s ∙ t) ⁻¹ ∙ ap (λ x → (Id→fun x) (inr ⋆)) (ap (ap (λ - → - 2)) z)) where
+    F : Fin ∼ Fin
+    F n = Eq→Id (ua _) _ _ (mirror-equiv n)
 
-    s : Id→fun (happly Fin Fin (inverse (happly Fin Fin) (hfe Fin Fin) (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))) 2) (inr ⋆) ＝ Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆)
-    s = ap (λ - → Id→fun (- 2) (inr ⋆)) q
+    s : Id→fun (happly Fin Fin (inverse (happly Fin Fin) (hfe Fin Fin) F) 2)
+          (inr ⋆) ＝ Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆)
+    s = ap (λ - → Id→fun (- 2) (inr ⋆)) (inverses-are-sections (happly Fin Fin) (hfe Fin Fin) F)
 
     t : Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆) ＝ inl (inr ⋆)
     t = ap (λ - → (pr₁ -) (inr ⋆)) (inverses-are-sections (Id→Eq _ _) (ua _ _ _) (mirror-equiv 2))
-
-    p : inl (inr ⋆) ＝ Id→fun (happly Fin Fin (inverse (happly Fin Fin) (hfe Fin Fin) (λ n → Eq→Id (ua _) _ _ (mirror-equiv n))) 2) (inr ⋆)
-    p = (s ∙ t) ⁻¹
-
 
   -- which  equality (Fin ＝ Fin')  does the universal property of Fin give?
 
