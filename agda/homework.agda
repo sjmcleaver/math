@@ -626,6 +626,7 @@ EX-ap₂ _ (refl _) (refl _) = refl _
 
 
 -- prove that function extensionality and f being an equivalence implies (_∘ f) is an equivalence
+--
 
 precomp-of-equiv-is-equiv : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {Z : 𝓦 ̇ } → (fe : funext 𝓥 𝓦) → (fe' : funext 𝓤 𝓦)
                             → (f : X → Y) → is-equiv f → is-equiv (_∘ f)
@@ -718,3 +719,40 @@ module EX-finite-types (ua : Univalence) where
 
   fin-is-set : (n : ℕ) → is-set (Fin n)
   fin-is-set n = hedberg (fin-has-decidable-equality n)
+
+
+  -- prove that Fin is left cancellable but not an embedding
+
+  fin-is-lc : (n m : ℕ) → Fin n ＝ Fin m → n ＝ m
+  fin-is-lc 0 0 _ = refl 0
+  fin-is-lc (succ n) 0 p = !𝟘 _ (Id→fun p (inr ⋆))
+  fin-is-lc 0 (succ n) p = !𝟘 _ (Id→fun (p ⁻¹) (inr ⋆))
+  fin-is-lc (succ n) (succ m) p = ap succ (fin-is-lc n m (F n m p)) where
+    F : (n m : ℕ) → Fin (succ n) ＝ Fin (succ m) → Fin n ＝ Fin m
+    F n m q = Eq→Id (ua _) _ _ (g , e) where
+      ϕ : Fin (succ n) ≃ Fin (succ m)
+      ϕ = Id→Eq _ _ q
+
+      H : (n : ℕ) → (x : Fin n + 𝟙) → x ≠ inr ⋆ → Fin n
+      H n (inr ⋆) z = !𝟘 _ (z (refl (inr ⋆)))
+      H n (inl μ) _ = μ
+
+      U : (x : Fin n) → (pr₁ ϕ) (inr ⋆) ＝ inr ⋆ → (pr₁ ϕ) (inl x) ＝ inr ⋆ → Fin m
+      U x p q = !𝟘 _ (inl-inr-disjoint-images (equivs-are-lc (pr₁ ϕ) (pr₂ ϕ) (q ∙ p ⁻¹)))
+
+      V : (x : Fin n) → (pr₁ ϕ) (inr ⋆) ＝ inr ⋆ → (pr₁ ϕ) (inl x) ≠ inr ⋆ → Fin m
+      V x p z = H m ((pr₁ ϕ) (inl x)) z
+
+      A : Fin n → (pr₁ ϕ) (inr ⋆) ＝ inr ⋆ → Fin m
+      A x p = +-recursion (U x p) (V x p) (fin-has-decidable-equality (succ m) ((pr₁ ϕ) (inl x)) (inr ⋆))
+
+      B : (pr₁ ϕ) (inr ⋆) ≠ inr ⋆ → Fin m
+      B z = H m ((pr₁ ϕ) (inr ⋆)) z
+
+      g : Fin n → Fin m
+      g x = +-recursion (A x) B (fin-has-decidable-equality (succ m) ((pr₁ ϕ) (inr ⋆)) (inr ⋆))
+
+      e : is-equiv g
+      e y = {!!}
+
+
