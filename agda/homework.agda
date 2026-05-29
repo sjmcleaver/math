@@ -743,21 +743,20 @@ module EX-finite-types (ua : Univalence) where
     E : is-equiv F
     E = invertibles-are-equivs F (F , u , u) where
       u : (ν : Fin (succ n)) → F (F ν) ＝ ν
-      u (inr ⋆) = transport (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl μ) - ＝ inr ⋆) ((pr₂ (lemma n μ)) ⁻¹) (refl (inr ⋆)) 
-                       -- : +-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ μ) ＝ inr ⋆
-                       --   Fin-has-decidable-equality n μ μ : (μ ＝ μ) + (μ ≠ μ)
-                       --   claim equal to some (inl _)
-      u (inl ν) = +-recursion (λ - → transport _ - (refl _)) (λ z → transport _ (u' z D) (refl _)) D where
+      u (inr ⋆) = transport (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl μ) - ＝ inr ⋆) ((pr₂ (lemma n μ)) ⁻¹) (refl (inr ⋆))
+      u (inl ν) = +-recursion A (λ z → ap F (u' z D) ∙ (u' z D)) D where
         D : (μ ＝ ν) + (μ ≠ ν)
         D = Fin-has-decidable-equality n μ ν
-
         u' : μ ≠ ν → (s : (μ ＝ ν) + (μ ≠ ν)) → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) s ＝ inl ν
         u' z (inl p) = !𝟘 _ (z p)
         u' z (inr _) = refl _
-         -- :  F (+-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ ν)) ＝ inl ν
-         -- z : μ ≠ ν
-         -- +-recursion (λ _ → inr ⋆) (λ _ → inl ν) _ ＝ inl ν
-         -- 
+        A : μ ＝ ν → F (+-recursion (λ _ → inr ⋆) (λ _ → inl ν) D) ＝ inl ν
+        A p = ap F a ∙ ap inl p where
+          a : +-recursion (λ _ → inr ⋆) (λ _ → inl ν) D ＝ inr ⋆
+          a = (ap (λ x → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ x)) (p ⁻¹)) ∙ ap (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) -) (pr₂ (lemma n μ))
+
+  swap-lemma : (n : ℕ) → (E : Fin (succ n) ≃ Fin (succ n)) → (pr₁ (swap (succ n) (inverse (pr₁ E) (pr₂ E) (inr ⋆)))) (inr ⋆) ＝ inr ⋆
+  swap-lemma = {!!}
 
   Fin-is-lc : (n m : ℕ) → Fin n ＝ Fin m → n ＝ m
   Fin-is-lc 0 0 _ = refl 0
