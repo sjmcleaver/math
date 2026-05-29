@@ -464,6 +464,10 @@ EX-equiv-to-set X Y (f , e) s x x' p p' =
       i t ⁻¹ ∙ i t                    ＝⟨ ⁻¹-left∙ (i t) ⟩
       refl t                          ∎
 
+-- EX-equiv-to-set' : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) → X ≃ Y → is-set Y → is-set X
+-- EX-equiv-to-set' X Y E S x x (refl x) p = {!!}
+
+
 EX-sections-closed-under-∼ : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } (f g : X → Y) → has-retraction f → g ∼ f → has-retraction g
 EX-sections-closed-under-∼ f g (r , i) e = (r , (λ x → ap r (e x) ∙ i x))
 
@@ -708,14 +712,14 @@ module EX-finite-types (ua : Univalence) where
 
   -- prove that (Fin n) is a set
 
-  inl-is-lc : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {x x' : X} → inl {Y = Y}  x ＝ inl x' → x ＝ x'
+  inl-is-lc : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {x x' : X} → inl {Y = Y} x ＝ inl x' → x ＝ x'
   inl-is-lc (refl (inl a)) = refl a
 
   Fin-has-decidable-equality : (n : ℕ) →  has-decidable-equality (Fin n)
   Fin-has-decidable-equality (succ n) (inr ⋆) (inr ⋆) = inl (refl (inr ⋆))
   Fin-has-decidable-equality (succ n) (inr ⋆) (inl _) = inr (≠-sym inl-inr-disjoint-images)
   Fin-has-decidable-equality (succ n) (inl _) (inr ⋆) = inr inl-inr-disjoint-images
-  Fin-has-decidable-equality (succ n) (inl μ) (inl ν) = +-induction (λ _ → decidable (inl μ ＝ inl ν)) (λ p → inl (ap inl p)) (λ z → inr (λ p → z (inl-is-lc p))) (Fin-has-decidable-equality n μ ν)
+  Fin-has-decidable-equality (succ n) (inl μ) (inl ν) = +-recursion (inl ∘ (ap inl)) (λ z → inr (z ∘ inl-is-lc)) (Fin-has-decidable-equality n μ ν)
 
   Fin-is-set : (n : ℕ) → is-set (Fin n)
   Fin-is-set n = hedberg (Fin-has-decidable-equality n)
@@ -723,36 +727,103 @@ module EX-finite-types (ua : Univalence) where
 
   -- prove that Fin is left cancellable but not an embedding
 
+  -- Fin-is-lc (succ n) (succ m) : Fin (succ n) ＝ Fin (succ m) → succ n ＝ succ m
+
+  lemma : (n : ℕ) → (μ : Fin n) → Σ p ꞉ μ ＝ μ , Fin-has-decidable-equality n μ μ ＝ inl p
+  lemma 1 (inr ⋆) = refl (inr ⋆) , refl (inl (refl (inr ⋆)))
+  lemma (succ (succ n)) (inr ⋆) = refl (inr ⋆) , refl (inl (refl (inr ⋆)))
+  lemma (succ (succ n)) (inl α) = ap inl (pr₁ (lemma (succ n) α)) , transport (λ - → +-recursion (inl ∘ (ap inl)) (λ z → inr (z ∘ inl-is-lc)) - ＝ inl (ap inl (pr₁ (lemma (succ n) α)))) ((pr₂ (lemma (succ n) α)) ⁻¹) (refl _)
+
+  swap : (n : ℕ) → Fin n → Fin (succ n) ≃ Fin (succ n)
+  swap n μ = F , E where
+    F : Fin (succ n) → Fin (succ n)
+    F (inr ⋆) = inl μ
+    F (inl ν) = +-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ ν)
+
+    E : is-equiv F
+    E = invertibles-are-equivs F (F , u , u) where
+      u : (ν : Fin (succ n)) → F (F ν) ＝ ν
+      u (inr ⋆) = transport (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl μ) - ＝ inr ⋆) ((pr₂ (lemma n μ)) ⁻¹) (refl (inr ⋆)) 
+                       -- : +-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ μ) ＝ inr ⋆
+                       --   Fin-has-decidable-equality n μ μ : (μ ＝ μ) + (μ ≠ μ)
+                       --   claim equal to some (inl _)
+      u (inl ν) = +-recursion (λ - → transport _ - (refl _)) (λ z → transport _ (u' z D) (refl _)) D where
+        D : (μ ＝ ν) + (μ ≠ ν)
+        D = Fin-has-decidable-equality n μ ν
+
+        u' : μ ≠ ν → (s : (μ ＝ ν) + (μ ≠ ν)) → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) s ＝ inl ν
+        u' z (inl p) = !𝟘 _ (z p)
+        u' z (inr _) = refl _
+         -- :  F (+-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ ν)) ＝ inl ν
+         -- z : μ ≠ ν
+         -- +-recursion (λ _ → inr ⋆) (λ _ → inl ν) _ ＝ inl ν
+         -- 
+
   Fin-is-lc : (n m : ℕ) → Fin n ＝ Fin m → n ＝ m
   Fin-is-lc 0 0 _ = refl 0
   Fin-is-lc (succ n) 0 p = !𝟘 _ (Id→fun p (inr ⋆))
   Fin-is-lc 0 (succ n) p = !𝟘 _ (Id→fun (p ⁻¹) (inr ⋆))
   Fin-is-lc (succ n) (succ m) p = ap succ (Fin-is-lc n m (F n m p)) where
     F : (n m : ℕ) → Fin (succ n) ＝ Fin (succ m) → Fin n ＝ Fin m
-    F n m q = Eq→Id (ua _) _ _ (g , e) where
-      ϕ : Fin (succ n) ≃ Fin (succ m)
+    F 0 0 _ = ap Fin (refl 0)
+    F 0 (succ n) q = {!!} -- q : 𝟙 ＝ ((Fin n) + 𝟙) + 𝟙
+    F (succ n) 0 q = (F 0 (succ n) (q ⁻¹)) ⁻¹
+    F 1 1 _ = ap Fin (refl 1)
+    F 1 (succ (succ n)) e = {!!} -- e : 𝟚 ＝ Fin n + 𝟛
+    F (succ (succ n)) 1 e = (F 1 (succ (succ n)) (e ⁻¹)) ⁻¹
+    F (succ (succ n)) (succ (succ m)) q = Eq→Id (ua _) _ _ (g , E) where
+      ϕ : Fin (succ (succ (succ n))) ≃ Fin (succ (succ (succ m)))
       ϕ = Id→Eq _ _ q
 
-      H : (n : ℕ) → (x : Fin n + 𝟙) → x ≠ inr ⋆ → Fin n
-      H n (inr ⋆) z = !𝟘 _ (z (refl (inr ⋆)))
-      H n (inl μ) _ = μ
+      get : (a : ℕ) → Fin (succ (succ (succ a))) → Fin (succ (succ a)) → Fin (succ (succ a))
+      get _ (inr ⋆) d = d
+      get _ (inl μ) _ = μ
 
-      U : (x : Fin n) → (pr₁ ϕ) (inr ⋆) ＝ inr ⋆ → (pr₁ ϕ) (inl x) ＝ inr ⋆ → Fin m
-      U x p q = !𝟘 _ (inl-inr-disjoint-images (equivs-are-lc (pr₁ ϕ) (pr₂ ϕ) (q ∙ p ⁻¹)))
+      g : Fin (succ (succ n)) → Fin (succ (succ m))
+      g x = get m ((pr₁ ϕ) (inl x)) (get m ((pr₁ ϕ) (inr ⋆)) (inr ⋆))
 
-      V : (x : Fin n) → (pr₁ ϕ) (inr ⋆) ＝ inr ⋆ → (pr₁ ϕ) (inl x) ≠ inr ⋆ → Fin m
-      V x p z = H m ((pr₁ ϕ) (inl x)) z
+      f : Fin (succ (succ m)) → Fin (succ (succ n))
+      f x = get n (inverse (pr₁ ϕ) (pr₂ ϕ) (inl x)) (get n (inverse (pr₁ ϕ) (pr₂ ϕ) (inr ⋆)) (inr ⋆))
 
-      A : Fin n → (pr₁ ϕ) (inr ⋆) ＝ inr ⋆ → Fin m
-      A x p = +-recursion (U x p) (V x p) (Fin-has-decidable-equality (succ m) ((pr₁ ϕ) (inl x)) (inr ⋆))
+      E : is-equiv g
+      E = invertibles-are-equivs g (f , α , β) where
+        α : f ∘ g ∼ id
+{-
+f (g (inr ⋆)) = f (get m ((pr₁ ϕ) (inl (inr ⋆))) (get m ((pr₁ ϕ) (inr ⋆)) (inr ⋆)))
+              = get n (inverse (pr₁ ϕ) (pr₂ ϕ) (inl (
+                                                      get m ((pr₁ ϕ) (inl (inr ⋆)))
+                                                            (get m ((pr₁ ϕ) (inr ⋆)) (inr ⋆)))))
+                      (get n (inverse (pr₁ ϕ) (pr₂ ϕ) (inr ⋆)) (inr ⋆))
 
-      B : (pr₁ ϕ) (inr ⋆) ≠ inr ⋆ → Fin m
-      B z = H m ((pr₁ ϕ) (inr ⋆)) z
 
-      g : Fin n → Fin m
-      g x = +-recursion (A x) B (Fin-has-decidable-equality (succ m) ((pr₁ ϕ) (inr ⋆)) (inr ⋆))
+              = get n (G (inl (get m (F (inl (inr ⋆))) (get m (F (inr ⋆)) (inr ⋆))))) (get n (G (inr ⋆)) (inr ⋆))
 
-      e : is-equiv g
-      e y = {!!}
+split on:
+p : (G (inl (get m (F (inl (inr ⋆))) (get m (F (inr ⋆)) (inr ⋆))))) ＝ inr ⋆
+q : (G (inl (get m (F (inl (inr ⋆))) (get m (F (inr ⋆)) (inr ⋆))))) ≠ inr ⋆
 
+ap (λ - → get n - (get n (G (inr ⋆)) (inr ⋆))) p : lhs ＝ get n (G (inr ⋆)) (inr ⋆)
+
+split on:
+r : G (inr ⋆) ＝ inr ⋆
+s : G (inr ⋆) ≠ inr ⋆
+
+ap (λ - → get n - (inr ⋆)) r : get n (G (inr ⋆)) (inr ⋆) ＝ inr ⋆
+
+s implies G (inr ⋆) ＝ inl x for some x
+u : G (inr ⋆) ＝ inl x
+
+ap (λ - → get n - (inr ⋆)) u : get n (G (inr ⋆)) (inr ⋆) ＝ x
+
+
+
+-}
+        α x = +-recursion A B (Fin-has-decidable-equality (succ (succ (succ m))) ((pr₁ ϕ) (inr ⋆)) (inr ⋆)) where
+          A : ((pr₁ ϕ) (inr ⋆)) ＝ (inr ⋆) → (f ∘ g) x ＝ x
+          A = {!!}
+          B : ((pr₁ ϕ) (inr ⋆)) ≠ (inr ⋆) → (f ∘ g) x ＝ x
+          B = {!!}
+
+        β : g ∘ f ∼ id
+        β = {!!}
 
