@@ -772,27 +772,35 @@ module EX-finite-types (ua : Univalence) where
           a : +-recursion (λ _ → inr ⋆) (λ _ → inl ν) D ＝ inr ⋆
           a = (ap (λ x → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ x)) (p ⁻¹)) ∙ ap (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) -) (pr₂ (lemma₂ n μ))
 
-  fix-inr : (n : ℕ) → Fin (succ n) ≃ Fin (succ n) → Σ F ꞉ (Fin (succ n) ≃ Fin (succ n)) , ⌜ F ⌝ (inr ⋆) ＝ inr ⋆
-  fix-inr n E = +-recursion (λ p → E , p) A D where
+  fix-inr : (n m : ℕ) → Fin (succ n) ≃ Fin (succ m) → Σ F ꞉ (Fin (succ n) ≃ Fin (succ m)) , ⌜ F ⌝ (inr ⋆) ＝ inr ⋆
+  fix-inr n m E = +-recursion (λ p → E , p) A D where
     D : ((⌜ E ⌝ (inr ⋆)) ＝ inr ⋆) + ((⌜ E ⌝ (inr ⋆)) ≠ inr ⋆)
-    D = Fin-has-decidable-equality (succ n) (⌜ E ⌝ (inr ⋆)) (inr ⋆)
+    D = Fin-has-decidable-equality (succ m) (⌜ E ⌝ (inr ⋆)) (inr ⋆)
 
-    A : ⌜ E ⌝ (inr ⋆) ≠ inr ⋆ → Σ F ꞉ (Fin (succ n) ≃ Fin (succ n)) , ⌜ F ⌝ (inr ⋆) ＝ inr ⋆
-    A z = ((swap n X) ● (≃-sym E)) , (W ∙ Z) where
+    A : ⌜ E ⌝ (inr ⋆) ≠ inr ⋆ → Σ F ꞉ (Fin (succ n) ≃ Fin (succ m)) , ⌜ F ⌝ (inr ⋆) ＝ inr ⋆
+    A z = ((swap n X) ● E) , (W ∙ Z) where
+      zz :  ⌜ ≃-sym E ⌝ (inr ⋆) ≠ inr ⋆
+      zz q = z ((((inverses-are-sections (pr₁ E) (pr₂ E) (inr ⋆)) ⁻¹) ∙ ap (pr₁ E) q) ⁻¹)
+
       X : Fin n
-      X = pr₁ (lemma₃ n (⌜ E ⌝ (inr ⋆)) z)
+      X = pr₁ (lemma₃ n (⌜ ≃-sym E ⌝ (inr ⋆)) zz)
+      -- z :  ⌜ E ⌝ (inr ⋆) ≠ inr ⋆
+      -- need
+      -- z' :  ⌜ ≃-sym E ⌝ (inr ⋆) ≠ inr ⋆
+      -- 
 
-      Y : inl (pr₁ (lemma₃ n (⌜ E ⌝ (inr ⋆)) z)) ＝ ⌜ E ⌝ (inr ⋆)
-      Y = y n (⌜ E ⌝ (inr ⋆)) z where
+      Y : inl (pr₁ (lemma₃ n (⌜ ≃-sym E ⌝ (inr ⋆)) zz)) ＝ ⌜ ≃-sym E ⌝ (inr ⋆)
+      Y = y n (⌜ ≃-sym E ⌝ (inr ⋆)) zz where
         y : (n : ℕ) → (μ : Fin (succ n)) → (z : μ ≠ inr ⋆) → inl (pr₁ (lemma₃ n μ z)) ＝ μ
         y n (inr ⋆) z = !𝟘 _ (z (refl (inr ⋆)))
         y (succ n) (inl μ) _ = refl _
 
-      W : ⌜ (swap n X) ● (≃-sym E) ⌝ (inr ⋆) ＝ (inverse (pr₁ E) (pr₂ E) (inl X))
-      W = ⌜⌝-hom (swap n X) (≃-sym E) (inr ⋆)
+      W : ⌜ (swap n X) ● E ⌝ (inr ⋆) ＝ (pr₁ E) (inl X)
+      W = ⌜⌝-hom (swap n X) E (inr ⋆)
 
-      Z : (inverse (pr₁ E) (pr₂ E) (inl X)) ＝ inr ⋆
-      Z = ap (λ - → inverse (pr₁ E) (pr₂ E) -) Y ∙ (inverses-are-retractions (pr₁ E) (pr₂ E) (inr ⋆))
+      Z : (pr₁ E) (inl X) ＝ inr ⋆
+      Z = ap (pr₁ E) Y ∙ (inverses-are-sections (pr₁ E) (pr₂ E) (inr ⋆))
+
 
   Fin-is-lc : (n m : ℕ) → Fin n ＝ Fin m → n ＝ m
   Fin-is-lc 0 0 _ = refl 0
@@ -803,6 +811,19 @@ module EX-finite-types (ua : Univalence) where
     F 0 0 _ = ap Fin (refl 0)
     F 0 (succ n) q = {!!} -- q : 𝟙 ＝ ((Fin n) + 𝟙) + 𝟙
     F (succ n) 0 q = (F 0 (succ n) (q ⁻¹)) ⁻¹
+    F (succ n) (succ m) q = Eq→Id (ua _) _ _ (g , E) where
+      ϕ : Fin (succ (succ n)) ≃ Fin (succ (succ m))
+      ϕ = pr₁ (fix-inr (succ n) (succ m) (Id→Eq _ _ q))
+
+      γ : ⌜ ϕ ⌝ (inr ⋆) ＝ inr ⋆
+      γ = pr₂ (fix-inr (succ n) (succ m) (Id→Eq _ _ q))
+
+      g : Fin (succ n) → Fin (succ m)
+      g = {!!}
+      E = {!!}
+
+      
+  {-
     F 1 1 _ = ap Fin (refl 1)
     F 1 (succ (succ n)) e = {!!} -- e : 𝟚 ＝ Fin n + 𝟛
     F (succ (succ n)) 1 e = (F 1 (succ (succ n)) (e ⁻¹)) ⁻¹
@@ -862,3 +883,4 @@ ap (λ - → get n - (inr ⋆)) u : get n (G (inr ⋆)) (inr ⋆) ＝ x
         β : g ∘ f ∼ id
         β = {!!}
 
+-}
