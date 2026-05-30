@@ -729,10 +729,27 @@ module EX-finite-types (ua : Univalence) where
 
   -- Fin-is-lc (succ n) (succ m) : Fin (succ n) ＝ Fin (succ m) → succ n ＝ succ m
 
-  lemma : (n : ℕ) → (μ : Fin n) → Σ p ꞉ μ ＝ μ , Fin-has-decidable-equality n μ μ ＝ inl p
-  lemma 1 (inr ⋆) = refl (inr ⋆) , refl (inl (refl (inr ⋆)))
-  lemma (succ (succ n)) (inr ⋆) = refl (inr ⋆) , refl (inl (refl (inr ⋆)))
-  lemma (succ (succ n)) (inl α) = ap inl (pr₁ (lemma (succ n) α)) , transport (λ - → +-recursion (inl ∘ (ap inl)) (λ z → inr (z ∘ inl-is-lc)) - ＝ inl (ap inl (pr₁ (lemma (succ n) α)))) ((pr₂ (lemma (succ n) α)) ⁻¹) (refl _)
+  lemma₀ : {A : 𝓤 ̇ } → (s : A + (¬ A)) → A → Σ a ꞉ A , s ＝ inl a
+  lemma₀ (inl a) _ = a , refl _
+  lemma₀ (inr z) a = !𝟘 _ (z a)
+
+  lemma₁ : {A : 𝓤 ̇ } → (s : A + (¬ A)) → (¬ A) → Σ z ꞉ (¬ A) , s ＝ inr z
+  lemma₁ (inl a) z = !𝟘 _ (z a)
+  lemma₁ (inr z) _ = z , refl _
+
+  lemma₂ : (n : ℕ) → (μ : Fin n) → Σ p ꞉ μ ＝ μ , Fin-has-decidable-equality n μ μ ＝ inl p
+  lemma₂ n μ = lemma₀ (Fin-has-decidable-equality n μ μ) (refl μ)
+
+  lemma₃ : (n : ℕ) → (μ : Fin (succ n)) → μ ≠ inr ⋆ → Σ ν ꞉ Fin n , μ ＝ inl ν
+  lemma₃ n (inr ⋆) z = !𝟘 _ (z (refl (inr ⋆)))
+  lemma₃ (succ n) (inl ν) _ = ν , refl (inl ν)
+
+  ⌜⌝-hom : {A B C : 𝓤 ̇ } (E : A ≃ B) (F : B ≃ C) → ⌜ E ● F ⌝ ∼ ⌜ F ⌝ ∘ ⌜ E ⌝
+  ⌜⌝-hom {A = A} {B = B} {C = C} E = ℍ-≃ (ua _) B (λ Y Q → ⌜ E ● Q ⌝ ∼ ⌜ Q ⌝ ∘ ⌜ E ⌝) (λ x → ap (λ - → ⌜ - ⌝ x) id-≃-right) C where
+    id-≃-right : E ● (id-≃ B) ＝ E
+    id-≃-right = ℍ-≃ (ua _) A (λ Y Q → Q ● (id-≃ Y) ＝ Q) (id-≃-left dfe dfe' (id-≃ A)) B E where
+      dfe = univalence-gives-dfunext (ua _)
+      dfe' = univalence-gives-dfunext (ua _)
 
   swap : (n : ℕ) → Fin n → Fin (succ n) ≃ Fin (succ n)
   swap n μ = F , E where
@@ -743,7 +760,7 @@ module EX-finite-types (ua : Univalence) where
     E : is-equiv F
     E = invertibles-are-equivs F (F , u , u) where
       u : (ν : Fin (succ n)) → F (F ν) ＝ ν
-      u (inr ⋆) = transport (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl μ) - ＝ inr ⋆) ((pr₂ (lemma n μ)) ⁻¹) (refl (inr ⋆))
+      u (inr ⋆) = transport (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl μ) - ＝ inr ⋆) ((pr₂ (lemma₂ n μ)) ⁻¹) (refl (inr ⋆))
       u (inl ν) = +-recursion A (λ z → ap F (u' z D) ∙ (u' z D)) D where
         D : (μ ＝ ν) + (μ ≠ ν)
         D = Fin-has-decidable-equality n μ ν
@@ -753,10 +770,29 @@ module EX-finite-types (ua : Univalence) where
         A : μ ＝ ν → F (+-recursion (λ _ → inr ⋆) (λ _ → inl ν) D) ＝ inl ν
         A p = ap F a ∙ ap inl p where
           a : +-recursion (λ _ → inr ⋆) (λ _ → inl ν) D ＝ inr ⋆
-          a = (ap (λ x → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ x)) (p ⁻¹)) ∙ ap (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) -) (pr₂ (lemma n μ))
+          a = (ap (λ x → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) (Fin-has-decidable-equality n μ x)) (p ⁻¹)) ∙ ap (λ - → +-recursion (λ _ → inr ⋆) (λ _ → inl ν) -) (pr₂ (lemma₂ n μ))
 
-  swap-lemma : (n : ℕ) → (E : Fin (succ n) ≃ Fin (succ n)) → (pr₁ (swap (succ n) (inverse (pr₁ E) (pr₂ E) (inr ⋆)))) (inr ⋆) ＝ inr ⋆
-  swap-lemma = {!!}
+  fix-inr : (n : ℕ) → Fin (succ n) ≃ Fin (succ n) → Σ F ꞉ (Fin (succ n) ≃ Fin (succ n)) , ⌜ F ⌝ (inr ⋆) ＝ inr ⋆
+  fix-inr n E = +-recursion (λ p → E , p) A D where
+    D : ((⌜ E ⌝ (inr ⋆)) ＝ inr ⋆) + ((⌜ E ⌝ (inr ⋆)) ≠ inr ⋆)
+    D = Fin-has-decidable-equality (succ n) (⌜ E ⌝ (inr ⋆)) (inr ⋆)
+
+    A : ⌜ E ⌝ (inr ⋆) ≠ inr ⋆ → Σ F ꞉ (Fin (succ n) ≃ Fin (succ n)) , ⌜ F ⌝ (inr ⋆) ＝ inr ⋆
+    A z = ((swap n X) ● (≃-sym E)) , (W ∙ Z) where
+      X : Fin n
+      X = pr₁ (lemma₃ n (⌜ E ⌝ (inr ⋆)) z)
+
+      Y : inl (pr₁ (lemma₃ n (⌜ E ⌝ (inr ⋆)) z)) ＝ ⌜ E ⌝ (inr ⋆)
+      Y = y n (⌜ E ⌝ (inr ⋆)) z where
+        y : (n : ℕ) → (μ : Fin (succ n)) → (z : μ ≠ inr ⋆) → inl (pr₁ (lemma₃ n μ z)) ＝ μ
+        y n (inr ⋆) z = !𝟘 _ (z (refl (inr ⋆)))
+        y (succ n) (inl μ) _ = refl _
+
+      W : ⌜ (swap n X) ● (≃-sym E) ⌝ (inr ⋆) ＝ (inverse (pr₁ E) (pr₂ E) (inl X))
+      W = ⌜⌝-hom (swap n X) (≃-sym E) (inr ⋆)
+
+      Z : (inverse (pr₁ E) (pr₂ E) (inl X)) ＝ inr ⋆
+      Z = ap (λ - → inverse (pr₁ E) (pr₂ E) -) Y ∙ (inverses-are-retractions (pr₁ E) (pr₂ E) (inr ⋆))
 
   Fin-is-lc : (n m : ℕ) → Fin n ＝ Fin m → n ＝ m
   Fin-is-lc 0 0 _ = refl 0
