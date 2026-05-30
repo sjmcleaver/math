@@ -822,6 +822,10 @@ module EX-finite-types (ua : Univalence) where
       E = invertibles-are-equivs g (h , A , B) where
         A : (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∘ (ex m) ∘ (pr₁ ϕ) ∘ inl ∼ id
         A = {!!}
+        -- ⌜ ϕ ⌝ (inl x) ＝ inl μ for some μ
+        -- inverse ⌜ ϕ ⌝ (inl μ) ＝ inl x
+        -- ex (inl x) ＝ x
+        
         B : (ex m) ∘ (pr₁ ϕ) ∘ inl ∘ (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∼ id
         B = {!!}
 
