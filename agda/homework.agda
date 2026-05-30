@@ -733,10 +733,6 @@ module EX-finite-types (ua : Univalence) where
   lemma₀ (inl a) _ = a , refl _
   lemma₀ (inr z) a = !𝟘 _ (z a)
 
-  lemma₁ : {A : 𝓤 ̇ } → (s : A + (¬ A)) → (¬ A) → Σ z ꞉ (¬ A) , s ＝ inr z
-  lemma₁ (inl a) z = !𝟘 _ (z a)
-  lemma₁ (inr z) _ = z , refl _
-
   lemma₂ : (n : ℕ) → (μ : Fin n) → Σ p ꞉ μ ＝ μ , Fin-has-decidable-equality n μ μ ＝ inl p
   lemma₂ n μ = lemma₀ (Fin-has-decidable-equality n μ μ) (refl μ)
 
@@ -784,10 +780,6 @@ module EX-finite-types (ua : Univalence) where
 
       X : Fin n
       X = pr₁ (lemma₃ n (⌜ ≃-sym E ⌝ (inr ⋆)) zz)
-      -- z :  ⌜ E ⌝ (inr ⋆) ≠ inr ⋆
-      -- need
-      -- z' :  ⌜ ≃-sym E ⌝ (inr ⋆) ≠ inr ⋆
-      -- 
 
       Y : inl (pr₁ (lemma₃ n (⌜ ≃-sym E ⌝ (inr ⋆)) zz)) ＝ ⌜ ≃-sym E ⌝ (inr ⋆)
       Y = y n (⌜ ≃-sym E ⌝ (inr ⋆)) zz where
@@ -800,7 +792,6 @@ module EX-finite-types (ua : Univalence) where
 
       Z : (pr₁ E) (inl X) ＝ inr ⋆
       Z = ap (pr₁ E) Y ∙ (inverses-are-sections (pr₁ E) (pr₂ E) (inr ⋆))
-
 
   Fin-is-lc : (n m : ℕ) → Fin n ＝ Fin m → n ＝ m
   Fin-is-lc 0 0 _ = refl 0
@@ -818,9 +809,21 @@ module EX-finite-types (ua : Univalence) where
       γ : ⌜ ϕ ⌝ (inr ⋆) ＝ inr ⋆
       γ = pr₂ (fix-inr (succ n) (succ m) (Id→Eq _ _ q))
 
+      ex : (a : ℕ) → Fin (succ (succ a)) → Fin (succ a)
+      ex a (inr ⋆) = inr ⋆
+      ex a (inl μ) = μ
+
       g : Fin (succ n) → Fin (succ m)
-      g = {!!}
-      E = {!!}
+      g = (ex m) ∘ (pr₁ ϕ) ∘ inl
+
+      h : Fin (succ m) → Fin (succ n)
+      h = (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl
+
+      E = invertibles-are-equivs g (h , A , B) where
+        A : (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∘ (ex m) ∘ (pr₁ ϕ) ∘ inl ∼ id
+        A = {!!}
+        B : (ex m) ∘ (pr₁ ϕ) ∘ inl ∘ (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∼ id
+        B = {!!}
 
       
   {-
