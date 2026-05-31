@@ -800,7 +800,22 @@ module EX-finite-types (ua : Univalence) where
   Fin-is-lc (succ n) (succ m) p = ap succ (Fin-is-lc n m (F n m p)) where
     F : (n m : ℕ) → Fin (succ n) ＝ Fin (succ m) → Fin n ＝ Fin m
     F 0 0 _ = ap Fin (refl 0)
-    F 0 (succ n) q = {!!} -- q : 𝟙 ＝ ((Fin n) + 𝟙) + 𝟙
+    F 0 (succ n) q = !𝟘 _ (inl-inr-disjoint-images t) where
+      ϕ : Fin 1 ≃ Fin (succ (succ n))
+      ϕ = Id→Eq _ _ q
+
+      f : (μ : Fin 1) → μ ＝ inr ⋆
+      f (inr ⋆) = refl (inr ⋆)
+
+      r : (pr₁ ϕ) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (inr ⋆))) ＝ (pr₁ ϕ) (inr ⋆)
+      r = ap (pr₁ ϕ) (f ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (inr ⋆))))
+
+      s : (pr₁ ϕ) (inr ⋆) ＝ (pr₁ ϕ) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inr ⋆))
+      s = ap (pr₁ ϕ) (f ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inr ⋆)) ⁻¹)
+
+      t : inl (inr ⋆) ＝ inr ⋆
+      t = inverses-are-sections (pr₁ ϕ) (pr₂ ϕ) (inl (inr ⋆)) ⁻¹ ∙ r ∙ s ∙ inverses-are-sections (pr₁ ϕ) (pr₂ ϕ) (inr ⋆)
+
     F (succ n) 0 q = (F 0 (succ n) (q ⁻¹)) ⁻¹
     F (succ n) (succ m) q = Eq→Id (ua _) _ _ (g , E) where
       ϕ : Fin (succ (succ n)) ≃ Fin (succ (succ m))
@@ -808,6 +823,9 @@ module EX-finite-types (ua : Univalence) where
 
       γ : ⌜ ϕ ⌝ (inr ⋆) ＝ inr ⋆
       γ = pr₂ (fix-inr (succ n) (succ m) (Id→Eq _ _ q))
+
+      γ' : inverse ⌜ ϕ ⌝ (pr₂ ϕ) (inr ⋆) ＝ inr ⋆
+      γ' = ((inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) (inr ⋆)) ⁻¹ ∙ ap (inverse ⌜ ϕ ⌝ (pr₂ ϕ)) γ) ⁻¹
 
       ex : (a : ℕ) → Fin (succ (succ a)) → Fin (succ a)
       ex a (inr ⋆) = inr ⋆
@@ -819,15 +837,57 @@ module EX-finite-types (ua : Univalence) where
       h : Fin (succ m) → Fin (succ n)
       h = (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl
 
+      U : (μ : Fin (succ n)) → Σ ν ꞉ (Fin (succ m)) , ⌜ ϕ ⌝ (inl μ) ＝ inl ν
+      U μ = lemma₃ (succ m) (⌜ ϕ ⌝ (inl μ)) (λ p → inl-inr-disjoint-images ((inverses-are-retractions (pr₁ ϕ) (pr₂ ϕ) _ ⁻¹) ∙ ap (inverse (pr₁ ϕ) (pr₂ ϕ)) (p ∙ γ ⁻¹) ∙ (inverses-are-retractions (pr₁ ϕ) (pr₂ ϕ) _)))
+
+      V : (ν : Fin (succ m)) → Σ μ ꞉ (Fin (succ n)) , inverse ⌜ ϕ ⌝ (pr₂ ϕ) (inl ν) ＝ inl μ
+      V ν = lemma₃ (succ n) (inverse ⌜ ϕ ⌝ (pr₂ ϕ) (inl ν)) (λ p → inl-inr-disjoint-images ((inverses-are-sections (pr₁ ϕ) (pr₂ ϕ) _ ⁻¹) ∙ ap (pr₁ ϕ) (p ∙ γ' ⁻¹) ∙ (inverses-are-sections (pr₁ ϕ) (pr₂ ϕ) _)))
+
       E = invertibles-are-equivs g (h , A , B) where
         A : (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∘ (ex m) ∘ (pr₁ ϕ) ∘ inl ∼ id
-        A = {!!}
-        -- ⌜ ϕ ⌝ (inl x) ＝ inl μ for some μ
-        -- inverse ⌜ ϕ ⌝ (inl μ) ＝ inl x
-        -- ex (inl x) ＝ x
-        
+        A μ = ((ap (ex n) (r ∙ s)) ∙ t) ⁻¹ where
+
+          r : inl μ ＝ (inverse (pr₁ ϕ) (pr₂ ϕ)) ((pr₁ ϕ) (inl μ))
+          r =  inverses-are-retractions (pr₁ ϕ) (pr₂ ϕ) (inl μ) ⁻¹
+
+          s : (inverse (pr₁ ϕ) (pr₂ ϕ)) ((pr₁ ϕ) (inl μ)) ＝ (inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (pr₁ (U μ)))
+          s = ap (inverse (pr₁ ϕ) (pr₂ ϕ)) (pr₂ (U μ))
+
+          t : (ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (pr₁ (U μ)))) ＝ (ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ((ex m) ((pr₁ ϕ) (inl μ)))))
+          t = ap ((ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∘ (ex m)) (pr₂ (U μ)) ⁻¹
+
+            -- ap (ex n) U.2 : ex (ϕ (inl μ)) = U.1
+
+          -- need inl (pr₁ (U μ)) ＝ inl ((ex m) ((pr₁ ϕ) (inl μ)))
+
+          -- ap (ex n) (r ∙ s) : μ ＝ (ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (pr₁ (U μ))))
+
+          -- r = inverses-are-retractions (pr₁ ϕ) (pr₂ ϕ) (inl μ) ⁻¹
+          -- s = ap (inverse (pr₁ ϕ) (pr₂ ϕ)) (pr₂ (U μ)
+          -- t = ?
+          
+          -- U.2 : ϕ (inl μ) ＝ inl U.1
+
+          --       invϕ (ϕ (inl μ)) ＝ invϕ (inl U.1)              ap invϕ U.2
+          --       inl μ ＝ invϕ (inl U.1)                         inverses-are-retractions
+          --       μ ＝ ex (invϕ (inl U.1))                        ap ex
+          --       μ ＝ ex (invϕ (inl ((ex m) (⌜ ϕ ⌝ (inl μ))))    ap _ U.2⁻¹
+          --       
+
         B : (ex m) ∘ (pr₁ ϕ) ∘ inl ∘ (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∼ id
-        B = {!!}
+        B ν = ((ap (ex m) (r ∙ s)) ∙ t) ⁻¹ where
+
+          r : inl ν ＝ (pr₁ ϕ) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ν))
+          r =  inverses-are-sections (pr₁ ϕ) (pr₂ ϕ) (inl ν) ⁻¹
+
+          s : (pr₁ ϕ) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ν)) ＝ (pr₁ ϕ) (inl (pr₁ (V ν)))
+          s = ap (pr₁ ϕ) (pr₂ (V ν))
+
+          -- ap (ex m) (r ∙ s) : ν ＝ (ex m) ((pr₁ ϕ) (inl (pr₁ (V ν))))
+
+          t : (ex m) ((pr₁ ϕ) (inl (pr₁ (V ν)))) ＝ (ex m) ((pr₁ ϕ) (inl ((ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ν)))))
+          t = ap ((ex m) ∘ (pr₁ ϕ) ∘ inl ∘ (ex n)) (pr₂ (V ν)) ⁻¹
+
 
       
   {-
