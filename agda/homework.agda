@@ -856,24 +856,6 @@ module EX-finite-types (ua : Univalence) where
           t : (ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (pr₁ (U μ)))) ＝ (ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ((ex m) ((pr₁ ϕ) (inl μ)))))
           t = ap ((ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∘ (ex m)) (pr₂ (U μ)) ⁻¹
 
-            -- ap (ex n) U.2 : ex (ϕ (inl μ)) = U.1
-
-          -- need inl (pr₁ (U μ)) ＝ inl ((ex m) ((pr₁ ϕ) (inl μ)))
-
-          -- ap (ex n) (r ∙ s) : μ ＝ (ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (pr₁ (U μ))))
-
-          -- r = inverses-are-retractions (pr₁ ϕ) (pr₂ ϕ) (inl μ) ⁻¹
-          -- s = ap (inverse (pr₁ ϕ) (pr₂ ϕ)) (pr₂ (U μ)
-          -- t = ?
-          
-          -- U.2 : ϕ (inl μ) ＝ inl U.1
-
-          --       invϕ (ϕ (inl μ)) ＝ invϕ (inl U.1)              ap invϕ U.2
-          --       inl μ ＝ invϕ (inl U.1)                         inverses-are-retractions
-          --       μ ＝ ex (invϕ (inl U.1))                        ap ex
-          --       μ ＝ ex (invϕ (inl ((ex m) (⌜ ϕ ⌝ (inl μ))))    ap _ U.2⁻¹
-          --       
-
         B : (ex m) ∘ (pr₁ ϕ) ∘ inl ∘ (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∼ id
         B ν = ((ap (ex m) (r ∙ s)) ∙ t) ⁻¹ where
 
@@ -883,71 +865,27 @@ module EX-finite-types (ua : Univalence) where
           s : (pr₁ ϕ) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ν)) ＝ (pr₁ ϕ) (inl (pr₁ (V ν)))
           s = ap (pr₁ ϕ) (pr₂ (V ν))
 
-          -- ap (ex m) (r ∙ s) : ν ＝ (ex m) ((pr₁ ϕ) (inl (pr₁ (V ν))))
-
           t : (ex m) ((pr₁ ϕ) (inl (pr₁ (V ν)))) ＝ (ex m) ((pr₁ ϕ) (inl ((ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ν)))))
           t = ap ((ex m) ∘ (pr₁ ϕ) ∘ inl ∘ (ex n)) (pr₂ (V ν)) ⁻¹
 
 
-      
-  {-
-    F 1 1 _ = ap Fin (refl 1)
-    F 1 (succ (succ n)) e = {!!} -- e : 𝟚 ＝ Fin n + 𝟛
-    F (succ (succ n)) 1 e = (F 1 (succ (succ n)) (e ⁻¹)) ⁻¹
-    F (succ (succ n)) (succ (succ m)) q = Eq→Id (ua _) _ _ (g , E) where
-      ϕ : Fin (succ (succ (succ n))) ≃ Fin (succ (succ (succ m)))
-      ϕ = Id→Eq _ _ q
+  S : (n : ℕ) → Group 𝓤₀
+  S n = (((Fin n ≃ Fin n) , {!!} , _●_ , (id-≃ (Fin n)) , (id-≃-left dfe dfe') , id-≃-right , (λ a b c → (●-assoc dfe dfe' a b c ⁻¹))) , ≃-sym , ≃-sym-left-inverse dfe) where
+    dfe = univalence-gives-dfunext (ua _)
+    dfe' = univalence-gives-dfunext (ua _)
+    id-≃-right = λ E → ℍ-≃ (ua _) (Fin n) (λ Y Q → Q ● (id-≃ Y) ＝ Q) (id-≃-left dfe dfe' (id-≃ (Fin n))) (Fin n) E
 
-      get : (a : ℕ) → Fin (succ (succ (succ a))) → Fin (succ (succ a)) → Fin (succ (succ a))
-      get _ (inr ⋆) d = d
-      get _ (inl μ) _ = μ
 
-      g : Fin (succ (succ n)) → Fin (succ (succ m))
-      g x = get m ((pr₁ ϕ) (inl x)) (get m ((pr₁ ϕ) (inr ⋆)) (inr ⋆))
-
-      f : Fin (succ (succ m)) → Fin (succ (succ n))
-      f x = get n (inverse (pr₁ ϕ) (pr₂ ϕ) (inl x)) (get n (inverse (pr₁ ϕ) (pr₂ ϕ) (inr ⋆)) (inr ⋆))
-
-      E : is-equiv g
-      E = invertibles-are-equivs g (f , α , β) where
-        α : f ∘ g ∼ id
 {-
-f (g (inr ⋆)) = f (get m ((pr₁ ϕ) (inl (inr ⋆))) (get m ((pr₁ ϕ) (inr ⋆)) (inr ⋆)))
-              = get n (inverse (pr₁ ϕ) (pr₂ ϕ) (inl (
-                                                      get m ((pr₁ ϕ) (inl (inr ⋆)))
-                                                            (get m ((pr₁ ϕ) (inr ⋆)) (inr ⋆)))))
-                      (get n (inverse (pr₁ ϕ) (pr₂ ϕ) (inr ⋆)) (inr ⋆))
 
 
-              = get n (G (inl (get m (F (inl (inr ⋆))) (get m (F (inr ⋆)) (inr ⋆))))) (get n (G (inr ⋆)) (inr ⋆))
+let e , f : Fin n ≃ Fin n
 
-split on:
-p : (G (inl (get m (F (inl (inr ⋆))) (get m (F (inr ⋆)) (inr ⋆))))) ＝ inr ⋆
-q : (G (inl (get m (F (inl (inr ⋆))) (get m (F (inr ⋆)) (inr ⋆))))) ≠ inr ⋆
-
-ap (λ - → get n - (get n (G (inr ⋆)) (inr ⋆))) p : lhs ＝ get n (G (inr ⋆)) (inr ⋆)
-
-split on:
-r : G (inr ⋆) ＝ inr ⋆
-s : G (inr ⋆) ≠ inr ⋆
-
-ap (λ - → get n - (inr ⋆)) r : get n (G (inr ⋆)) (inr ⋆) ＝ inr ⋆
-
-s implies G (inr ⋆) ＝ inl x for some x
-u : G (inr ⋆) ＝ inl x
-
-ap (λ - → get n - (inr ⋆)) u : get n (G (inr ⋆)) (inr ⋆) ＝ x
+let p , q : e ＝ f
 
 
+~ is a subsingleton because the codomain is a set
+~ is equivalent to ＝ 
 
--}
-        α x = +-recursion A B (Fin-has-decidable-equality (succ (succ (succ m))) ((pr₁ ϕ) (inr ⋆)) (inr ⋆)) where
-          A : ((pr₁ ϕ) (inr ⋆)) ＝ (inr ⋆) → (f ∘ g) x ＝ x
-          A = {!!}
-          B : ((pr₁ ϕ) (inr ⋆)) ≠ (inr ⋆) → (f ∘ g) x ＝ x
-          B = {!!}
-
-        β : g ∘ f ∼ id
-        β = {!!}
 
 -}
