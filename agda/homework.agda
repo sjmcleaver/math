@@ -870,10 +870,23 @@ module EX-finite-types (ua : Univalence) where
 
 
   S : (n : ℕ) → Group 𝓤₀
-  S n = (((Fin n ≃ Fin n) , {!!} , _●_ , (id-≃ (Fin n)) , (id-≃-left dfe dfe') , id-≃-right , (λ a b c → (●-assoc dfe dfe' a b c ⁻¹))) , ≃-sym , ≃-sym-left-inverse dfe) where
+  S n = (((Fin n ≃ Fin n) , A  , _●_ , (id-≃ (Fin n)) , (id-≃-left dfe dfe') , id-≃-right , (λ a b c → (●-assoc dfe dfe' a b c ⁻¹))) , ≃-sym , ≃-sym-left-inverse dfe) where
     dfe = univalence-gives-dfunext (ua _)
     dfe' = univalence-gives-dfunext (ua _)
     id-≃-right = λ E → ℍ-≃ (ua _) (Fin n) (λ Y Q → Q ● (id-≃ Y) ＝ Q) (id-≃-left dfe dfe' (id-≃ (Fin n))) (Fin n) E
+    A : (e f : Fin n ≃ Fin n) → is-subsingleton (e ＝ f)
+    A e f p q = ? where
+      Q : (⌜ e ⌝ ＝ ⌜ f ⌝) ≃  (⌜ e ⌝ ∼ ⌜ f ⌝) 
+      Q = hfunext-≃ (univalence-gives-hfunext (ua _)) ⌜ e ⌝ ⌜ f ⌝
+      R : is-subsingleton (⌜ e ⌝ ∼ ⌜ f ⌝)
+      R = Π-is-subsingleton dfe (λ x → Fin-is-set n _ _)
+      T : is-subsingleton (⌜ e ⌝ ＝ ⌜ f ⌝)
+      T = equiv-to-subsingleton Q R
+      U : pr₁ (from-Σ-＝ p) ＝ pr₁ (from-Σ-＝ q)
+      U = T _ _
+      --V : transport is-equiv (pr₁ (from-Σ-＝ p)) (pr₂ (from-Σ-＝ p)) ＝ pr₂ (from-Σ-＝ q)
+      --V = being-equiv-is-subsingleton _ _
+      
 
 
 {-
@@ -885,7 +898,10 @@ let p , q : e ＝ f
 
 
 ~ is a subsingleton because the codomain is a set
-~ is equivalent to ＝ 
+~ is equivalent to ＝
+
+
+⌜ e ⌝ ~ ⌜ f ⌝ ≃ ⌜ e ⌝ ＝ ⌜ f ⌝
 
 
 -}
