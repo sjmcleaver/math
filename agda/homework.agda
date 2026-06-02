@@ -818,6 +818,9 @@ module EX-finite-types (ua : Univalence) where
       ϕ : Fin (succ (succ n)) ≃ Fin (succ (succ m))
       ϕ = pr₁ (fix-inr (succ n) (succ m) (Id→Eq _ _ q))
 
+      ψ : Fin (succ (succ m)) → Fin (succ (succ n))
+      ψ = inverse (pr₁ ϕ) (pr₂ ϕ)
+
       γ : ⌜ ϕ ⌝ (inr ⋆) ＝ inr ⋆
       γ = pr₂ (fix-inr (succ n) (succ m) (Id→Eq _ _ q))
 
@@ -829,50 +832,45 @@ module EX-finite-types (ua : Univalence) where
       ex a (inl μ) = μ
 
       g : Fin (succ n) → Fin (succ m)
-      g = (ex m) ∘ (pr₁ ϕ) ∘ inl
+      g = (ex m) ∘ ⌜ ϕ ⌝ ∘ inl
 
       h : Fin (succ m) → Fin (succ n)
-      h = (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl
+      h = (ex n) ∘ ψ ∘ inl
 
       U : (μ : Fin (succ n)) → Σ ν ꞉ (Fin (succ m)) , ⌜ ϕ ⌝ (inl μ) ＝ inl ν
-      U μ = lemma₃ (succ m) (⌜ ϕ ⌝ (inl μ)) (λ p → inl-inr-disjoint-images ((inverses-are-retractions (pr₁ ϕ) (pr₂ ϕ) _ ⁻¹) ∙ ap (inverse (pr₁ ϕ) (pr₂ ϕ)) (p ∙ γ ⁻¹) ∙ (inverses-are-retractions (pr₁ ϕ) (pr₂ ϕ) _)))
+      U μ = lemma₃ (succ m) (⌜ ϕ ⌝ (inl μ)) (λ p → inl-inr-disjoint-images ((inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) _ ⁻¹) ∙ ap ψ (p ∙ γ ⁻¹) ∙ (inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) _)))
 
-      V : (ν : Fin (succ m)) → Σ μ ꞉ (Fin (succ n)) , inverse ⌜ ϕ ⌝ (pr₂ ϕ) (inl ν) ＝ inl μ
-      V ν = lemma₃ (succ n) (inverse ⌜ ϕ ⌝ (pr₂ ϕ) (inl ν)) (λ p → inl-inr-disjoint-images ((inverses-are-sections (pr₁ ϕ) (pr₂ ϕ) _ ⁻¹) ∙ ap (pr₁ ϕ) (p ∙ γ' ⁻¹) ∙ (inverses-are-sections (pr₁ ϕ) (pr₂ ϕ) _)))
+      V : (ν : Fin (succ m)) → Σ μ ꞉ (Fin (succ n)) , ψ (inl ν) ＝ inl μ
+      V ν = lemma₃ (succ n) (ψ (inl ν)) (λ p → inl-inr-disjoint-images ((inverses-are-sections ⌜ ϕ ⌝ (pr₂ ϕ) _ ⁻¹) ∙ ap ⌜ ϕ ⌝ (p ∙ γ' ⁻¹) ∙ (inverses-are-sections ⌜ ϕ ⌝ (pr₂ ϕ) _)))
 
       E = invertibles-are-equivs g (h , A , B) where
-        A : (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∘ (ex m) ∘ (pr₁ ϕ) ∘ inl ∼ id
-        A μ = ((ap (ex n) (r ∙ s)) ∙ t) ⁻¹ where
+        A : (ex n) ∘ ψ ∘ inl ∘ (ex m) ∘ ⌜ ϕ ⌝ ∘ inl ∼ id
+        A μ = ((ap (ex n) r) ∙ t) ⁻¹ where
+          r : inl μ ＝ ψ (inl (pr₁ (U μ)))
+          r = inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) (inl μ) ⁻¹ ∙ ap ψ (pr₂ (U μ))
 
-          r : inl μ ＝ (inverse (pr₁ ϕ) (pr₂ ϕ)) ((pr₁ ϕ) (inl μ))
-          r =  inverses-are-retractions (pr₁ ϕ) (pr₂ ϕ) (inl μ) ⁻¹
+          t : (ex n) (ψ (inl (pr₁ (U μ)))) ＝ (ex n) (ψ (inl ((ex m) (⌜ ϕ ⌝ (inl μ)))))
+          t = ap ((ex n) ∘ ψ ∘ inl ∘ (ex m)) (pr₂ (U μ)) ⁻¹
 
-          s : (inverse (pr₁ ϕ) (pr₂ ϕ)) ((pr₁ ϕ) (inl μ)) ＝ (inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (pr₁ (U μ)))
-          s = ap (inverse (pr₁ ϕ) (pr₂ ϕ)) (pr₂ (U μ))
+        B : (ex m) ∘ ⌜ ϕ ⌝ ∘ inl ∘ (ex n) ∘ ψ ∘ inl ∼ id
+        B ν = ((ap (ex m) r) ∙ t) ⁻¹ where
+          r : inl ν ＝ ⌜ ϕ ⌝ (inl (pr₁ (V ν)))
+          r =  inverses-are-sections ⌜ ϕ ⌝ (pr₂ ϕ) (inl ν) ⁻¹ ∙ ap ⌜ ϕ ⌝ (pr₂ (V ν))
 
-          t : (ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl (pr₁ (U μ)))) ＝ (ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ((ex m) ((pr₁ ϕ) (inl μ)))))
-          t = ap ((ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∘ (ex m)) (pr₂ (U μ)) ⁻¹
-
-        B : (ex m) ∘ (pr₁ ϕ) ∘ inl ∘ (ex n) ∘ (inverse (pr₁ ϕ) (pr₂ ϕ)) ∘ inl ∼ id
-        B ν = ((ap (ex m) (r ∙ s)) ∙ t) ⁻¹ where
-
-          r : inl ν ＝ (pr₁ ϕ) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ν))
-          r =  inverses-are-sections (pr₁ ϕ) (pr₂ ϕ) (inl ν) ⁻¹
-
-          s : (pr₁ ϕ) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ν)) ＝ (pr₁ ϕ) (inl (pr₁ (V ν)))
-          s = ap (pr₁ ϕ) (pr₂ (V ν))
-
-          t : (ex m) ((pr₁ ϕ) (inl (pr₁ (V ν)))) ＝ (ex m) ((pr₁ ϕ) (inl ((ex n) ((inverse (pr₁ ϕ) (pr₂ ϕ)) (inl ν)))))
-          t = ap ((ex m) ∘ (pr₁ ϕ) ∘ inl ∘ (ex n)) (pr₂ (V ν)) ⁻¹
+          t : ((ex m) ∘ ⌜ ϕ ⌝ ∘ inl) (pr₁ (V ν)) ＝ ((ex m) ∘ ⌜ ϕ ⌝ ∘ inl ∘ (ex n) ∘ ψ) (inl ν)
+          t = ap ((ex m) ∘ ⌜ ϕ ⌝ ∘ inl ∘ (ex n)) (pr₂ (V ν)) ⁻¹
 
   Fin-is-not-embedding : ¬(is-embedding Fin)
   Fin-is-not-embedding B = inl-inr-disjoint-images ((ap (λ - → Id→fun - (inr ⋆)) b' ∙ t) ⁻¹) where
     A : Σ q ꞉ 2 ＝ 2 , transport (λ - → Fin - ＝ Fin 2) q (refl (Fin 2)) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)
     A = from-Σ-＝ ((B (Fin 2)) (2 , refl (Fin 2)) (2 , Eq→Id (ua _) _ _ (mirror-equiv 2)))
+
     a : pr₁ A ＝ refl 2
     a = ℕ-is-set 2 2 _ _
+
     b' : refl (Fin 2) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)
     b' = transport (λ - → transport _ - (refl (Fin 2)) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)) a (pr₂ A)
+
     t : Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆) ＝ inl (inr ⋆)
     t = ap (λ - → (pr₁ -) (inr ⋆)) (inverses-are-sections (Id→Eq _ _) (ua _ _ _) (mirror-equiv 2))
 
