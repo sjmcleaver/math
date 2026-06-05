@@ -277,12 +277,15 @@ C-ℕ = PC-ℕ , Iso→id , (λ a b → (F a b , G a b)) where
     ≤-is-set a a _ _ _ _ ,
     ≤-is-set b b _ _ _ _)))
 
+
 {-
-PC-Set : (𝓤 : Universe) → Precategory 𝓤 𝓤
-PC-Set = ?
+
+PC-Set : (𝓤 : Universe) → Precategory (𝓤 ⁺) 𝓤
+PC-Set 𝓤 = ((Σ A ꞉ 𝓤 ̇  , is-set A) , (λ (X , _) (Y , _) → (X → Y)) , (λ _ → id) , ((λ _ _ _ → (λ f g → g ∘ f)) , (λ (A , a) (B , b) f → Π-is-set (univalence-gives-hfunext (ua _)) (λ _ → b) , (refl _ , refl _))))
 
 C-Set : (𝓤 : Universe) → Category 𝓤 𝓤
 C-Set = ?
+
 -}
 
 -- define the type of topological spaces
