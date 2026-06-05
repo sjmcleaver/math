@@ -650,8 +650,11 @@ module EX-finite-types (ua : Univalence) where
   hfe : hfunext 𝓤₀ 𝓤₁
   hfe = univalence-gives-global-hfunext ua
 
+  fin : ∃! Fin' ꞉ (ℕ → 𝓤₀ ̇ ) , (Fin' 0 ＝ 𝟘) × ((n : ℕ) → Fin' (succ n) ＝ Fin' n + 𝟙)
+  fin = finite-types.fin hfe
+
   Fin : ℕ → 𝓤₀ ̇
-  Fin = finite-types.Fin hfe
+  Fin = pr₁ (pr₁ fin)
 
   plusOne : (n : ℕ) → Fin n → Fin (succ n)
   plusOne 0 _ = inr ⋆
@@ -676,7 +679,7 @@ module EX-finite-types (ua : Univalence) where
   mirror-is-involution 0 _ = refl _
   mirror-is-involution 1 _ = refl _
   mirror-is-involution (succ (succ n)) (inr ⋆) = ap (plusOne (succ n)) (mirror-is-involution (succ n) (inr ⋆))
-  mirror-is-involution (succ (succ n)) (inl μ) = (mirrorPlus (succ n) (mirror (succ n) μ)) ∙ (ap inl (mirror-is-involution (succ n) μ))
+  mirror-is-involution (succ (succ n)) (inl μ) = mirrorPlus (succ n) (mirror (succ n) μ) ∙ ap inl (mirror-is-involution (succ n) μ)
 
   mirror-equiv : (n : ℕ) → Fin n ≃ Fin n
   mirror-equiv n = mirror n , invertibles-are-equivs (mirror n) (mirror n , mirror-is-involution n , mirror-is-involution n)
@@ -704,8 +707,62 @@ module EX-finite-types (ua : Univalence) where
   Fin' : ℕ → 𝓤₀ ̇
   Fin' = pr₁ (center _ fin')
 
-  universal-Fin-Fin'-equality : Fin ＝ Fin'
-  universal-Fin-Fin'-equality = {!!}
+  naive-Fin-＝-Fin' : Fin ＝ Fin'
+  naive-Fin-＝-Fin' = (univalence-gives-funext (ua _)) (λ n → Eq→Id (ua _) (Fin n) (Fin' n) (f n , e n)) where
+    f : (n : ℕ) → Fin n → Fin' n
+    f 0 = id
+    f (succ n) (inr ⋆) = inl ⋆
+    f (succ n) (inl μ) = inr (f n μ)
+
+    g : (n : ℕ) → Fin' n → Fin n
+    g 0 = id
+    g (succ n) (inl ⋆) = inr ⋆
+    g (succ n) (inr μ) = inl (g n μ)
+
+    u : (n : ℕ) → (g n) ∘ (f n) ∼ id
+    u 0 _ = refl _
+    u (succ n) (inr ⋆) = refl (inr ⋆)
+    u (succ n) (inl μ) = ap inl (u n μ)
+
+    v : (n : ℕ) → (f n) ∘ (g n) ∼ id
+    v 0 _ = refl _
+    v (succ n) (inl ⋆) = refl (inl ⋆)
+    v (succ n) (inr μ) = ap inr (v n μ)
+
+    e : (n : ℕ) → is-equiv (f n)
+    e n = invertibles-are-equivs (f n) (g n , u n , v n)
+
+  +-𝟙-comm : (n : ℕ) → 𝟙 + (Fin' n) ≃ (Fin' n) + 𝟙
+  +-𝟙-comm n = (f n) , (e n) where
+    f : (n : ℕ) → 𝟙 + (Fin' n) → (Fin' n) + 𝟙
+    f 0 _ = inr ⋆
+    f (succ n) (inl ⋆) = inr ⋆
+    f (succ n) (inr μ) = inl μ
+
+    g : (n : ℕ) → (Fin' n) + 𝟙 → 𝟙 + (Fin' n)
+    g 0 _ = inl ⋆
+    g (succ n) (inr ⋆) = inl ⋆
+    g (succ n) (inl μ) = inr μ
+
+    e : (n : ℕ) → is-equiv (f n)
+    e n = invertibles-are-equivs (f n) (g n , u n , v n) where
+      u : (n : ℕ) → (g n) ∘ (f n) ∼ id
+      u 0 (inl ⋆) = refl (inl ⋆)
+      u (succ n) (inl ⋆) = refl (inl ⋆)
+      u (succ n) (inr μ) = refl (inr μ)
+
+      v : (n : ℕ) → (f n) ∘ (g n) ∼ id
+      v 0 (inr ⋆) = refl (inr ⋆)
+      v (succ n) (inr ⋆) = refl (inr ⋆)
+      v (succ n) (inl μ) = refl (inl μ)
+
+  universal-Fin-＝-Fin' : Fin ＝ Fin'
+  universal-Fin-＝-Fin' = pr₁ (from-Σ-＝ ((pr₂ fin) (Fin' , refl 𝟘 , (λ n → Eq→Id (ua _) _ _ (+-𝟙-comm n)))))
+
+  naive-Fin-＝-Fin'-is-universal : naive-Fin-＝-Fin' ＝ universal-Fin-＝-Fin'
+  naive-Fin-＝-Fin'-is-universal = {!!}
+-- funext-≃
+
 
   -- prove that (Fin n) is a set
 
@@ -850,7 +907,7 @@ module EX-finite-types (ua : Univalence) where
       E : is-equiv g
       E = invertibles-are-equivs g (h , A , B) where
         A : Λ₁ ∘ ψ ∘ inl ∘ Λ₂ ∘ ⌜ ϕ ⌝ ∘ inl ∼ id
-        A μ = ((ap Λ₁ r) ∙ ap (Λ₁ ∘ ψ ∘ inl ∘ Λ₂) (pr₂ (U μ)) ⁻¹) ⁻¹ where
+        A μ = (ap Λ₁ r ∙ ap (Λ₁ ∘ ψ ∘ inl ∘ Λ₂) (pr₂ (U μ)) ⁻¹) ⁻¹ where
           r : inl μ ＝ ψ (inl (pr₁ (U μ)))
           r = inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) (inl μ) ⁻¹ ∙ ap ψ (pr₂ (U μ))
 
@@ -860,15 +917,15 @@ module EX-finite-types (ua : Univalence) where
           r = inverses-are-sections ⌜ ϕ ⌝ (pr₂ ϕ) (inl ν) ⁻¹ ∙ ap ⌜ ϕ ⌝ (pr₂ (V ν))
 
   Fin-is-not-embedding : ¬(is-embedding Fin)
-  Fin-is-not-embedding B = inl-inr-disjoint-images ((ap (λ - → Id→fun - (inr ⋆)) b' ∙ t) ⁻¹) where
+  Fin-is-not-embedding B = inl-inr-disjoint-images ((ap (λ - → Id→fun - (inr ⋆)) b ∙ t) ⁻¹) where
     A : Σ q ꞉ 2 ＝ 2 , transport (λ - → Fin - ＝ Fin 2) q (refl (Fin 2)) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)
     A = from-Σ-＝ ((B (Fin 2)) (2 , refl (Fin 2)) (2 , Eq→Id (ua _) _ _ (mirror-equiv 2)))
 
     a : pr₁ A ＝ refl 2
     a = ℕ-is-set 2 2 _ _
 
-    b' : refl (Fin 2) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)
-    b' = transport (λ - → transport _ - (refl (Fin 2)) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)) a (pr₂ A)
+    b : refl (Fin 2) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)
+    b = transport (λ - → transport _ - (refl (Fin 2)) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)) a (pr₂ A)
     
     t : Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆) ＝ inl (inr ⋆)
     t = ap (λ - → (pr₁ -) (inr ⋆)) (inverses-are-sections (Id→Eq _ _) (ua _ _ _) (mirror-equiv 2))
