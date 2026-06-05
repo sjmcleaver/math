@@ -827,15 +827,19 @@ module EX-finite-types (ua : Univalence) where
       γ' : inverse ⌜ ϕ ⌝ (pr₂ ϕ) (inr ⋆) ＝ inr ⋆
       γ' = ((inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) (inr ⋆)) ⁻¹ ∙ ap (inverse ⌜ ϕ ⌝ (pr₂ ϕ)) γ) ⁻¹
 
-      ex : (a : ℕ) → Fin (succ (succ a)) → Fin (succ a)
-      ex a (inr ⋆) = inr ⋆
-      ex a (inl μ) = μ
+      Λ₁ : Fin (succ (succ n)) → Fin (succ n)
+      Λ₁ (inr ⋆) = inr ⋆
+      Λ₁ (inl μ) = μ
+
+      Λ₂ : Fin (succ (succ m)) → Fin (succ m)
+      Λ₂ (inr ⋆) = inr ⋆
+      Λ₂ (inl μ) = μ
 
       g : Fin (succ n) → Fin (succ m)
-      g = (ex m) ∘ ⌜ ϕ ⌝ ∘ inl
+      g = Λ₂ ∘ ⌜ ϕ ⌝ ∘ inl
 
       h : Fin (succ m) → Fin (succ n)
-      h = (ex n) ∘ ψ ∘ inl
+      h = Λ₁ ∘ ψ ∘ inl
 
       U : (μ : Fin (succ n)) → Σ ν ꞉ (Fin (succ m)) , ⌜ ϕ ⌝ (inl μ) ＝ inl ν
       U μ = lemma₃ (succ m) (⌜ ϕ ⌝ (inl μ)) (λ p → inl-inr-disjoint-images ((inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) _ ⁻¹) ∙ ap ψ (p ∙ γ ⁻¹) ∙ (inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) _)))
@@ -843,22 +847,17 @@ module EX-finite-types (ua : Univalence) where
       V : (ν : Fin (succ m)) → Σ μ ꞉ (Fin (succ n)) , ψ (inl ν) ＝ inl μ
       V ν = lemma₃ (succ n) (ψ (inl ν)) (λ p → inl-inr-disjoint-images ((inverses-are-sections ⌜ ϕ ⌝ (pr₂ ϕ) _ ⁻¹) ∙ ap ⌜ ϕ ⌝ (p ∙ γ' ⁻¹) ∙ (inverses-are-sections ⌜ ϕ ⌝ (pr₂ ϕ) _)))
 
+      E : is-equiv g
       E = invertibles-are-equivs g (h , A , B) where
-        A : (ex n) ∘ ψ ∘ inl ∘ (ex m) ∘ ⌜ ϕ ⌝ ∘ inl ∼ id
-        A μ = ((ap (ex n) r) ∙ t) ⁻¹ where
+        A : Λ₁ ∘ ψ ∘ inl ∘ Λ₂ ∘ ⌜ ϕ ⌝ ∘ inl ∼ id
+        A μ = ((ap Λ₁ r) ∙ ap (Λ₁ ∘ ψ ∘ inl ∘ Λ₂) (pr₂ (U μ)) ⁻¹) ⁻¹ where
           r : inl μ ＝ ψ (inl (pr₁ (U μ)))
           r = inverses-are-retractions ⌜ ϕ ⌝ (pr₂ ϕ) (inl μ) ⁻¹ ∙ ap ψ (pr₂ (U μ))
 
-          t : (ex n) (ψ (inl (pr₁ (U μ)))) ＝ (ex n) (ψ (inl ((ex m) (⌜ ϕ ⌝ (inl μ)))))
-          t = ap ((ex n) ∘ ψ ∘ inl ∘ (ex m)) (pr₂ (U μ)) ⁻¹
-
-        B : (ex m) ∘ ⌜ ϕ ⌝ ∘ inl ∘ (ex n) ∘ ψ ∘ inl ∼ id
-        B ν = ((ap (ex m) r) ∙ t) ⁻¹ where
+        B : Λ₂ ∘ ⌜ ϕ ⌝ ∘ inl ∘ Λ₁ ∘ ψ ∘ inl ∼ id
+        B ν = (ap Λ₂ r ∙ ap (Λ₂ ∘ ⌜ ϕ ⌝ ∘ inl ∘ Λ₁) (pr₂ (V ν)) ⁻¹) ⁻¹ where
           r : inl ν ＝ ⌜ ϕ ⌝ (inl (pr₁ (V ν)))
-          r =  inverses-are-sections ⌜ ϕ ⌝ (pr₂ ϕ) (inl ν) ⁻¹ ∙ ap ⌜ ϕ ⌝ (pr₂ (V ν))
-
-          t : ((ex m) ∘ ⌜ ϕ ⌝ ∘ inl) (pr₁ (V ν)) ＝ ((ex m) ∘ ⌜ ϕ ⌝ ∘ inl ∘ (ex n) ∘ ψ) (inl ν)
-          t = ap ((ex m) ∘ ⌜ ϕ ⌝ ∘ inl ∘ (ex n)) (pr₂ (V ν)) ⁻¹
+          r = inverses-are-sections ⌜ ϕ ⌝ (pr₂ ϕ) (inl ν) ⁻¹ ∙ ap ⌜ ϕ ⌝ (pr₂ (V ν))
 
   Fin-is-not-embedding : ¬(is-embedding Fin)
   Fin-is-not-embedding B = inl-inr-disjoint-images ((ap (λ - → Id→fun - (inr ⋆)) b' ∙ t) ⁻¹) where
@@ -870,45 +869,25 @@ module EX-finite-types (ua : Univalence) where
 
     b' : refl (Fin 2) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)
     b' = transport (λ - → transport _ - (refl (Fin 2)) ＝ Eq→Id (ua _) _ _ (mirror-equiv 2)) a (pr₂ A)
-
+    
     t : Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆) ＝ inl (inr ⋆)
     t = ap (λ - → (pr₁ -) (inr ⋆)) (inverses-are-sections (Id→Eq _ _) (ua _ _ _) (mirror-equiv 2))
 
-  S : (n : ℕ) → Group 𝓤₀
-  S n = (((Fin n ≃ Fin n) , A  , _●_ , (id-≃ (Fin n)) , (id-≃-left dfe dfe) , id-≃-right , (λ a b c → (●-assoc dfe dfe a b c ⁻¹))) , ≃-sym , ≃-sym-left-inverse dfe) where
-    dfe = univalence-gives-dfunext (ua _)
-    id-≃-right = λ E → ℍ-≃ (ua _) (Fin n) (λ Y Q → Q ● (id-≃ Y) ＝ Q) (id-≃-left dfe dfe (id-≃ (Fin n))) (Fin n) E
-    A : (e f : Fin n ≃ Fin n) → is-subsingleton (e ＝ f)
-    A e f = equiv-to-subsingleton W X  where
+  Fin-≃-is-set : (n : ℕ) → is-set (Fin n ≃ Fin n)
+  Fin-≃-is-set n e f = equiv-to-subsingleton (Σ-＝-≃ e f) X  where
+      dfe = univalence-gives-dfunext (ua _)
       Q : (⌜ e ⌝ ＝ ⌜ f ⌝) ≃  (⌜ e ⌝ ∼ ⌜ f ⌝) 
       Q = hfunext-≃ (univalence-gives-hfunext (ua _)) ⌜ e ⌝ ⌜ f ⌝
       R : is-subsingleton (⌜ e ⌝ ∼ ⌜ f ⌝)
       R = Π-is-subsingleton dfe (λ x → Fin-is-set n _ _)
-      T : is-subsingleton (⌜ e ⌝ ＝ ⌜ f ⌝)
-      T = equiv-to-subsingleton Q R
-      W : (e ＝ f) ≃ (Σ ρ ꞉ (⌜ e ⌝ ＝ ⌜ f ⌝) , transport is-equiv ρ (pr₂ e) ＝ pr₂ f)
-      W = Σ-＝-≃ e f
       X : is-subsingleton (Σ ρ ꞉ (⌜ e ⌝ ＝ ⌜ f ⌝) , transport is-equiv ρ (pr₂ e) ＝ pr₂ f)
-      X = Σ-is-subsingleton T (λ _ → subsingletons-are-sets (is-equiv ⌜ f ⌝) (being-equiv-is-subsingleton dfe dfe (pr₁ f)) _ _)
+      X = Σ-is-subsingleton (equiv-to-subsingleton Q R) (λ _ → subsingletons-are-sets (is-equiv ⌜ f ⌝) (being-equiv-is-subsingleton dfe dfe (pr₁ f)) _ _)
 
-  
+  id-≃-right : (n : ℕ) → (E : Fin n ≃ Fin n) → (E ● id-≃ (Fin n)) ＝ E
+  id-≃-right n E = ℍ-≃ (ua _) (Fin n) (λ Y Q → Q ● (id-≃ Y) ＝ Q) (id-≃-left dfe dfe (id-≃ (Fin n))) (Fin n) E where
+    dfe = univalence-gives-dfunext (ua _)
 
-      
--- Σ-＝-≃
+  S : (n : ℕ) → Group 𝓤₀
+  S n = (((Fin n ≃ Fin n) , (λ e f → Fin-≃-is-set n e f)  , _●_ , (id-≃ (Fin n)) , (id-≃-left dfe dfe) , id-≃-right n , (λ a b c → (●-assoc dfe dfe a b c ⁻¹))) , ≃-sym , ≃-sym-left-inverse dfe) where
+    dfe = univalence-gives-dfunext (ua _)
 
-{-
-
-
-let e , f : Fin n ≃ Fin n
-
-let p , q : e ＝ f
-
-
-~ is a subsingleton because the codomain is a set
-~ is equivalent to ＝
-
-
-⌜ e ⌝ ~ ⌜ f ⌝ ≃ ⌜ e ⌝ ＝ ⌜ f ⌝
-
-
--}
