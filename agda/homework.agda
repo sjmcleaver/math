@@ -290,28 +290,14 @@ C-Set = ?
 
 -- define the type of topological spaces
 --
+
 {-
-P : (X : 𝓤 ̇ ) → 𝓤 ̇
-P X = X → 𝟚
 
-_and_ : 𝟚 → 𝟚 → 𝟚
-₁ and ₁ = ₁
-₁ and ₀ = ₀
-₀ and _ = ₀
+intersection : {X : 𝓤 ̇ } → 𝓟 X → 𝓟 X → 𝓟 X
+intersection u v x = ((u x holds) + (v x holds)) , ?
 
-_or_ : 𝟚 → 𝟚 → 𝟚
-₀ or ₀ = ₀
-₀ or ₁ = ₁
-₁ or _ = ₁
-
-union : {X : 𝓤 ̇ } → P X → P X → P X
-union u v x = (u x) and (v x)
-
-intersection : {X : 𝓤 ̇ } → P X → P X → P X
-intersection u v x = (u x) or (v x)
-
-Union : {X : 𝓤 ̇ } → (C : P (P X)) → P X
-Union C x = ∃ u : P X , ((u x) × (C u)
+Union : {X : 𝓤 ̇ } → 𝓟 (𝓟 X) → 𝓟 X
+Union {X = X} C x = lower (Σ u ꞉ (𝓟 X) , ((u x holds) × (C u holds))) , ?
 
 -- need
 -- (x : X) → (C : P (P X)) → decidable (Σ u ꞉ P X , (C u) and (u x))
@@ -738,33 +724,95 @@ module EX-finite-types (ua : Univalence) where
   +-𝟙-comm : (n : ℕ) → 𝟙 + (Fin' n) ≃ (Fin' n) + 𝟙
   +-𝟙-comm n = (f n) , (e n) where
     f : (n : ℕ) → 𝟙 + (Fin' n) → (Fin' n) + 𝟙
-    f 0 _ = inr ⋆
-    f (succ n) (inl ⋆) = inr ⋆
-    f (succ n) (inr μ) = inl μ
+    f n (inl ⋆) = inr ⋆
+    f n (inr μ) = inl μ
 
     g : (n : ℕ) → (Fin' n) + 𝟙 → 𝟙 + (Fin' n)
-    g 0 _ = inl ⋆
-    g (succ n) (inr ⋆) = inl ⋆
-    g (succ n) (inl μ) = inr μ
+    g n (inr ⋆) = inl ⋆
+    g n (inl μ) = inr μ
 
     e : (n : ℕ) → is-equiv (f n)
     e n = invertibles-are-equivs (f n) (g n , u n , v n) where
       u : (n : ℕ) → (g n) ∘ (f n) ∼ id
-      u 0 (inl ⋆) = refl (inl ⋆)
-      u (succ n) (inl ⋆) = refl (inl ⋆)
-      u (succ n) (inr μ) = refl (inr μ)
+      u n (inl ⋆) = refl (inl ⋆)
+      u n (inr μ) = refl (inr μ)
 
       v : (n : ℕ) → (f n) ∘ (g n) ∼ id
-      v 0 (inr ⋆) = refl (inr ⋆)
-      v (succ n) (inr ⋆) = refl (inr ⋆)
-      v (succ n) (inl μ) = refl (inl μ)
+      v n (inr ⋆) = refl (inr ⋆)
+      v n (inl μ) = refl (inl μ)
 
   universal-Fin-＝-Fin' : Fin ＝ Fin'
   universal-Fin-＝-Fin' = pr₁ (from-Σ-＝ ((pr₂ fin) (Fin' , refl 𝟘 , (λ n → Eq→Id (ua _) _ _ (+-𝟙-comm n)))))
 
   naive-Fin-＝-Fin'-is-universal : naive-Fin-＝-Fin' ＝ universal-Fin-＝-Fin'
-  naive-Fin-＝-Fin'-is-universal = {!!}
--- funext-≃
+  naive-Fin-＝-Fin'-is-universal = (inverses-are-retractions F (pr₂ E) naive-Fin-＝-Fin') ⁻¹ ∙ ap G P ∙ inverses-are-retractions F (pr₂ E) universal-Fin-＝-Fin' where
+    E : (Fin ＝ Fin') ≃ (Fin ∼ Fin')
+    E = hfunext-≃ (univalence-gives-global-hfunext ua) Fin Fin'
+    F : Fin ＝ Fin' → Fin ∼ Fin'
+    F = ⌜ E ⌝
+    G : Fin ∼ Fin' → Fin ＝ Fin'
+    G = inverse ⌜ E ⌝ (pr₂ E)
+    U : Fin ∼ Fin'
+    U = F universal-Fin-＝-Fin'
+    N : Fin ∼ Fin'
+    N = F naive-Fin-＝-Fin'
+    P : N ＝ U
+    P = (univalence-gives-global-dfunext ua) (λ n → (inverses-are-retractions (FF n) (pr₂ (EE n)) (u n)) ⁻¹ ∙ ap (GG n) (PP n) ∙ inverses-are-retractions (FF n) (pr₂ (EE n)) (v n)) where
+      u : (n : ℕ) → Fin n ＝ Fin' n
+      u n = (⌜ hfunext-≃ (univalence-gives-global-hfunext ua) Fin Fin' ⌝ naive-Fin-＝-Fin') n
+      v : (n : ℕ) → Fin n ＝ Fin' n
+      v n = (⌜ hfunext-≃ (univalence-gives-global-hfunext ua) Fin Fin' ⌝ universal-Fin-＝-Fin') n
+      EE : (n : ℕ) → (Fin n ＝ Fin' n) ≃ (Fin n ≃ Fin' n)
+      EE n = Id→Eq _ _ , ua _ _ _
+      FF : (n : ℕ) → Fin n ＝ Fin' n → Fin n ≃ Fin' n
+      FF n = ⌜ EE n ⌝
+      GG : (n : ℕ) → Fin n ≃ Fin' n → Fin n ＝ Fin' n
+      GG n = inverse ⌜ EE n ⌝ (pr₂ (EE n))
+      NN : (n : ℕ) → Fin n ≃ Fin' n
+      NN n = (FF n) (u n)
+      UU : (n : ℕ) → Fin n ≃ Fin' n
+      UU n = (FF n) (v n)
+      PP : (n : ℕ) → (NN n) ＝ (UU n)
+      PP n = feq-to-eeq ((univalence-gives-global-dfunext ua) (Q n)) where
+        feq-to-eeq : {f g : Fin n ≃ Fin' n} → ⌜ f ⌝ ＝ ⌜ g ⌝ → f ＝ g
+        feq-to-eeq = {!!}
+
+        Q : (n : ℕ) → (μ : Fin n) →  ⌜ NN n ⌝ μ ＝ ⌜ UU n ⌝ μ
+        Q 1 (inr ⋆) = ?
+        Q (succ (succ n)) (inr ⋆) = {!!}
+        Q (succ (succ n)) (inl ν) = {!!}
+
+--  Id→fun ((⌜ hfunext-≃ (univalence-gives-global-hfunext ua) Fin Fin' ⌝ naive-Fin-＝-Fin') n)
+
+
+-- (⌜ hfunext-≃ (univalence-gives-global-hfunext ua) Fin Fin' ⌝ naive-Fin-＝-Fin') n : Fin n ＝ Fin' n
+-- (⌜ hfunext-≃ (univalence-gives-global-hfunext ua) Fin Fin' ⌝ universal-Fin-＝-Fin') n : Fin n ＝ Fin' n
+
+-- (Fin n ＝ Fin' n) ≃ (Fin n ≃ Fin' n)
+
+-- equality of equivalences is just equality of the underlying functions
+
+-- get the equality of the underlying (Fin n → Fin' n) functions using funext
+
+-- extend to equality of equivalences
+
+-- apply the inverse of the univalence equivalence to get back to Fin n ＝ Fin' n
+
+
+
+
+
+-- naive-Fin-＝-Fin' : Fin ＝ Fin'
+
+-- (Fin ＝ Fin') ≃ (Fin ∼ Fin')
+
+-- construct (universal-Fin-∼-Fin' ＝ naive-Fin-∼-Fin' using dfunext)
+
+-- apply the inverse to transport equality into (Fin ＝ Fin')
+
+
+
+
 
 
   -- prove that (Fin n) is a set
@@ -948,6 +996,6 @@ module EX-finite-types (ua : Univalence) where
     dfe = univalence-gives-dfunext (ua _)
 
   S : (n : ℕ) → Group 𝓤₀
-  S n = (((Fin n ≃ Fin n) , (λ e f → Fin-≃-is-set n e f)  , _●_ , (id-≃ (Fin n)) , (id-≃-left dfe dfe) , id-≃-right n , (λ a b c → (●-assoc dfe dfe a b c ⁻¹))) , ≃-sym , ≃-sym-left-inverse dfe) where
+  S n = (((Fin n ≃ Fin n) , Fin-≃-is-set n  , _●_ , id-≃ (Fin n) , id-≃-left dfe dfe , id-≃-right n , (λ a b c → (●-assoc dfe dfe a b c ⁻¹))) , ≃-sym , ≃-sym-left-inverse dfe) where
     dfe = univalence-gives-dfunext (ua _)
 
