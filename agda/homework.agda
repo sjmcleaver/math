@@ -1012,9 +1012,10 @@ ap-equiv-is-equiv X Y f e x x' = invertibles-are-equivs (ap f {x = x} {x' = x'})
   g : Y → X
   g = inverse f e
 
-  Z : (s : X) → g (f s) ＝ s
+  Z : g ∘ f ∼ id
   Z = inverses-are-retractions f e
 
+  Z' : f ∘ g ∼ id
   Z' = inverses-are-sections f e
 
   G : (s s' : X) → f s ＝ f s' → s ＝ s'
@@ -1022,9 +1023,6 @@ ap-equiv-is-equiv X Y f e x x' = invertibles-are-equivs (ap f {x = x} {x' = x'})
 
   E : (s s' : X) → (G s s') ∘ (ap f) ∼ id
   E s s (refl s) = ap (λ - → - ∙ inverses-are-retractions f e s) refl-right ∙ ⁻¹-left∙ (inverses-are-retractions f e s)
-
-  U : (y y' : Y) (p : y ＝ y') → ap id p ＝ p
-  U y y (refl y) = refl (refl y)
 
   F : (ap f) ∘ (G x x') ∼ id
   F p = ap f (Z x ⁻¹ ∙ ap g p ∙ Z x')                  ＝⟨ ap-∙ f (Z x ⁻¹ ∙ ap g p) (Z x') ⟩
@@ -1034,8 +1032,11 @@ ap-equiv-is-equiv X Y f e x x' = invertibles-are-equivs (ap f {x = x} {x' = x'})
         ap f (Z x ⁻¹) ∙ ap (f ∘ g) p ∙ Z' (f x')       ＝⟨ ap (λ - → - ∙ ap (f ∘ g) p ∙ Z' (f x')) (ap⁻¹ f (Z x) ⁻¹ ∙ ap (λ - → - ⁻¹) (half-adjoint-condition f e x)) ⟩
         Z' (f x) ⁻¹ ∙ ap (f ∘ g) p ∙ Z' (f x')         ＝⟨ ap (λ - → Z' (f x) ⁻¹ ∙ ap (f ∘ g) p ∙ -) (⁻¹-involutive (Z' (f x'))) ⁻¹ ⟩
         Z' (f x) ⁻¹ ∙ ap (f ∘ g) p ∙ (Z' (f x') ⁻¹) ⁻¹ ＝⟨ ~-naturality' id (f ∘ g) (λ - → Z' - ⁻¹) {f x} {f x'} {p} ⟩
-        ap id p                                        ＝⟨ U (f x) (f x') p ⟩
+        ap id p                                        ＝⟨ ap-id p ⟩
         p                                              ∎
+
+ap-to-equiv : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {f : X → Y} {e : is-equiv f} {x x' : X} → (x ＝ x') ≃ (f x ＝ f x')
+ap-to-equiv {_} {_} {X} {Y} {f} {e} {x} {x'} = ap f , ap-equiv-is-equiv X Y f e x x'
 
 ≃-preserves-hlevel : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) (E : X ≃ Y) (n : ℕ) → X is-of-hlevel n → Y is-of-hlevel n
 ≃-preserves-hlevel X Y E 0 h = equiv-to-singleton (≃-sym E) h
