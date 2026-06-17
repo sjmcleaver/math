@@ -743,7 +743,7 @@ module EX-finite-types (ua : Univalence) where
 
   universal-Fin-＝-Fin' : Fin ＝ Fin'
   universal-Fin-＝-Fin' = pr₁ (from-Σ-＝ ((pr₂ fin) (Fin' , refl 𝟘 , (λ n → Eq→Id (ua _) _ _ (+-𝟙-comm n)))))
-
+{-
   naive-Fin-＝-Fin'-is-universal : naive-Fin-＝-Fin' ＝ universal-Fin-＝-Fin'
   naive-Fin-＝-Fin'-is-universal = (inverses-are-retractions F (pr₂ E) naive-Fin-＝-Fin') ⁻¹ ∙ ap G P ∙ inverses-are-retractions F (pr₂ E) universal-Fin-＝-Fin' where
     E : (Fin ＝ Fin') ≃ (Fin ∼ Fin')
@@ -778,9 +778,10 @@ module EX-finite-types (ua : Univalence) where
         feq-to-eeq = {!!}
 
         Q : (n : ℕ) → (μ : Fin n) →  ⌜ NN n ⌝ μ ＝ ⌜ UU n ⌝ μ
-        Q 1 (inr ⋆) = ?
+        Q 1 (inr ⋆) = {!!}
         Q (succ (succ n)) (inr ⋆) = {!!}
         Q (succ (succ n)) (inl ν) = {!!}
+-}
 
 --  Id→fun ((⌜ hfunext-≃ (univalence-gives-global-hfunext ua) Fin Fin' ⌝ naive-Fin-＝-Fin') n)
 
@@ -981,6 +982,9 @@ module EX-finite-types (ua : Univalence) where
     t : Id→fun (Eq→Id (ua _) _ _ (mirror-equiv 2)) (inr ⋆) ＝ inl (inr ⋆)
     t = ap (λ - → (pr₁ -) (inr ⋆)) (inverses-are-sections (Id→Eq _ _) (ua _ _ _) (mirror-equiv 2))
 
+
+  -- finite symmetric groups
+
   Fin-≃-is-set : (n : ℕ) → is-set (Fin n ≃ Fin n)
   Fin-≃-is-set n e f = equiv-to-subsingleton (Σ-＝-≃ e f) X  where
       dfe = univalence-gives-dfunext (ua _)
@@ -998,4 +1002,65 @@ module EX-finite-types (ua : Univalence) where
   S : (n : ℕ) → Group 𝓤₀
   S n = (((Fin n ≃ Fin n) , Fin-≃-is-set n  , _●_ , id-≃ (Fin n) , id-≃-left dfe dfe , id-≃-right n , (λ a b c → (●-assoc dfe dfe a b c ⁻¹))) , ≃-sym , ≃-sym-left-inverse dfe) where
     dfe = univalence-gives-dfunext (ua _)
+
+
+-- prove that Σ and Π preserve hlevel
+--
+
+ap-equiv-is-equiv : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) (f : X → Y) → is-equiv f → (x x' : X) → is-equiv (ap f {x = x} {x' = x'})
+ap-equiv-is-equiv X Y f e x x' = invertibles-are-equivs (ap f {x = x} {x' = x'}) (G x x' , E x x' , F) where
+  g : Y → X
+  g = inverse f e
+
+  Z : (s : X) → g (f s) ＝ s
+  Z = inverses-are-retractions f e
+
+  Z' = inverses-are-sections f e
+
+  G : (s s' : X) → f s ＝ f s' → s ＝ s'
+  G s s' p = Z s ⁻¹ ∙ ap g p ∙ Z s'
+
+  E : (s s' : X) → (G s s') ∘ (ap f) ∼ id
+  E s s (refl s) = ap (λ - → - ∙ inverses-are-retractions f e s) refl-right ∙ ⁻¹-left∙ (inverses-are-retractions f e s)
+
+  U : (y y' : Y) (p : y ＝ y') → ap id p ＝ p
+  U y y (refl y) = refl (refl y)
+
+  F : (ap f) ∘ (G x x') ∼ id
+  F p = ap f (Z x ⁻¹ ∙ ap g p ∙ Z x')                  ＝⟨ ap-∙ f (Z x ⁻¹ ∙ ap g p) (Z x') ⟩
+        ap f (Z x ⁻¹ ∙ ap g p) ∙ ap f (Z x')           ＝⟨ ap (λ - → - ∙ ap f (Z x')) (ap-∙ f (Z x ⁻¹) (ap g p)) ⟩
+        ap f (Z x ⁻¹) ∙ ap f (ap g p) ∙ ap f (Z x')    ＝⟨ ap (λ - → ap f (Z x ⁻¹) ∙ - ∙ ap f (Z x')) (ap-∘ g f p) ⁻¹ ⟩
+        ap f (Z x ⁻¹) ∙ ap (f ∘ g) p ∙ ap f (Z x')     ＝⟨ ap (λ - → ap f (Z x ⁻¹) ∙ ap (f ∘ g) p ∙ -) (half-adjoint-condition f e x') ⟩
+        ap f (Z x ⁻¹) ∙ ap (f ∘ g) p ∙ Z' (f x')       ＝⟨ ap (λ - → - ∙ ap (f ∘ g) p ∙ Z' (f x')) (ap⁻¹ f (Z x) ⁻¹ ∙ ap (λ - → - ⁻¹) (half-adjoint-condition f e x)) ⟩
+        Z' (f x) ⁻¹ ∙ ap (f ∘ g) p ∙ Z' (f x')         ＝⟨ ap (λ - → Z' (f x) ⁻¹ ∙ ap (f ∘ g) p ∙ -) (⁻¹-involutive (Z' (f x'))) ⁻¹ ⟩
+        Z' (f x) ⁻¹ ∙ ap (f ∘ g) p ∙ (Z' (f x') ⁻¹) ⁻¹ ＝⟨ ~-naturality' id (f ∘ g) (λ - → Z' - ⁻¹) {f x} {f x'} {p} ⟩
+        ap id p                                        ＝⟨ U (f x) (f x') p ⟩
+        p                                              ∎
+
+≃-preserves-hlevel : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) (E : X ≃ Y) (n : ℕ) → X is-of-hlevel n → Y is-of-hlevel n
+≃-preserves-hlevel X Y E 0 h = equiv-to-singleton (≃-sym E) h
+≃-preserves-hlevel X Y E (succ n) h y y' = ≃-preserves-hlevel (g y ＝ g y') (y ＝ y') P n (h (g y) (g y'))  where
+  f = pr₁ E
+  e = pr₂ E
+  g = inverse f e
+
+  P : (g y ＝ g y') ≃ (y ＝ y')
+  P = ≃-sym (ap g , ap-equiv-is-equiv Y X g (inverses-are-equivs f e) y y')
+
+Σ-preserves-hlevel : {X : 𝓤 ̇ } → (P : X → 𝓥 ̇ ) (n : ℕ) → X is-of-hlevel n → ((x : X) → (P x) is-of-hlevel n) → (Σ P) is-of-hlevel n
+Σ-preserves-hlevel {X = X} P 0 h f = ((c , center (P c) (f c)) , (λ - → to-Σ-＝ (α - , β -))) where
+  c = center X h
+  d = center (P c) (f c)
+  α : (μ : Σ P) → c ＝ pr₁ μ
+  α μ = centrality X h (pr₁ μ)
+  β : (μ : Σ P) → transport _ (α μ) d ＝ pr₂ μ
+  β μ = centrality (P (pr₁ μ)) (f (pr₁ μ)) _ ⁻¹ ∙ centrality (P (pr₁ μ)) (f (pr₁ μ)) _
+
+Σ-preserves-hlevel P (succ n) h f u v = ≃-preserves-hlevel _ _ E n z where
+  z : (Σ p ꞉ pr₁ u ＝ pr₁ v , transport P p (pr₂ u) ＝ pr₂ v) is-of-hlevel n
+  z = Σ-preserves-hlevel (λ p → transport P p (pr₂ u) ＝ pr₂ v) n (h (pr₁ u) (pr₁ v)) (λ p → f (pr₁ v) (transport P p (pr₂ u)) (pr₂ v))
+
+  E : (Σ p ꞉ pr₁ u ＝ pr₁ v , transport P p (pr₂ u) ＝ pr₂ v) ≃ (u ＝ v)
+  E = ≃-sym (Σ-＝-≃ u v)
+
 
