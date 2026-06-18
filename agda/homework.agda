@@ -1083,6 +1083,25 @@ ap-to-equiv {_} {_} {X} {Y} {f} {e} {x} {x'} = ap f , ap-equiv-is-equiv X Y f e 
   E = ≃-sym (Σ-＝-≃ (x₁ , a₁) (x₂ , a₂))
 
 
-Π-is-hlevel : {X : 𝓤 ̇ } (P : X → 𝓥 ̇ ) (ua : Univalence) (n : ℕ) → X is-of-hlevel n → ((x : X) → (P x) is-of-hlevel n) → (Π P) is-of-hlevel n
-Π-is-hlevel P ua 0 (c , π) ϕ = (λ - → pr₁ (ϕ -)) , (λ f → (univalence-gives-dfunext' (ua _) (ua _)) (λ - → pr₂ (ϕ -) (f -))) 
-Π-is-hlevel P ua (succ n) h ϕ f g = {!!}
+Π-is-hlevel : {X : 𝓤 ̇ } (P : X → 𝓥 ̇ ) (ua : Univalence) (n : ℕ) → ((x : X) → (P x) is-of-hlevel n) → (Π P) is-of-hlevel n
+Π-is-hlevel P ua 0 ϕ = (λ - → pr₁ (ϕ -)) , (λ f → (univalence-gives-dfunext' (ua _) (ua _)) (λ - → pr₂ (ϕ -) (f -)))
+Π-is-hlevel P ua (succ n) ϕ f g = ≃-preserves-hlevel _ _ E n (Π-is-hlevel (λ - → f - ＝ g -) ua n (λ - → ϕ - (f -) (g -))) where
+  E : (f ∼ g) ≃ (f ＝ g)
+  E = ≃-sym (hfunext-≃ (univalence-gives-hfunext' (ua _) (ua _)) f g)
+
+{-
+
+(f ＝ g) ≃ (f ∼ g)
+
+(f ∼ g) = Π (λ - → f - ＝ g -)
+
+
+ϕ - : (P -) is-of-hlevel (succ n)
+    : (y y' : P -) → (y ＝ y') is-of-hlevel n
+
+
+but X isn't necessarily of hlevel n
+
+
+
+-}
