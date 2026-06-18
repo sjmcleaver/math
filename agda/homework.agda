@@ -1034,6 +1034,31 @@ ap-equiv-is-equiv X Y f e x x' = invertibles-are-equivs (ap f {x = x} {x' = x'})
         Z' (f x) ⁻¹ ∙ ap (f ∘ g) p ∙ (Z' (f x') ⁻¹) ⁻¹ ＝⟨ ~-naturality' id (f ∘ g) (λ - → Z' - ⁻¹) {f x} {f x'} {p} ⟩
         ap id p                                        ＝⟨ ap-id p ⟩
         p                                              ∎
+{-
+goal:
+ap f (Z x ⁻¹ ∙ ap g p ∙ Z x') ＝ p
+
+solution:
+distribute 2
+compose 1
+convert 2
+dni 1
+ap-id 1
+
+
+∙ ap-∙ f (Z x ⁻¹ ∙ ap g p) (Z x')
+∙ ap (λ - → - ∙ ap f (Z x')) (ap-∙ f (Z x ⁻¹) (ap g p))
+∙ ap (λ - → ap f (Z x ⁻¹) ∙ - ∙ ap f (Z x')) (ap-∘ g f p) ⁻¹
+∙ ap (λ - → ap f (Z x ⁻¹) ∙ ap (f ∘ g) p ∙ -) (half-adjoint-condition f e x')
+∙ ap (λ - → - ∙ ap (f ∘ g) p ∙ Z' (f x')) (ap⁻¹ f (Z x) ⁻¹ ∙ ap (λ - → - ⁻¹) (half-adjoint-condition f e x))
+∙ ap (λ - → Z' (f x) ⁻¹ ∙ ap (f ∘ g) p ∙ -) (⁻¹-involutive (Z' (f x'))) ⁻¹
+∙ ~-naturality' id (f ∘ g) (λ - → Z' - ⁻¹) {f x} {f x'} {p}
+∙ ap-id p
+
+
+-}
+
+
 
 ap-to-equiv : {X : 𝓤 ̇ } {Y : 𝓥 ̇ } {f : X → Y} {e : is-equiv f} {x x' : X} → (x ＝ x') ≃ (f x ＝ f x')
 ap-to-equiv {_} {_} {X} {Y} {f} {e} {x} {x'} = ap f , ap-equiv-is-equiv X Y f e x x'
@@ -1041,27 +1066,23 @@ ap-to-equiv {_} {_} {X} {Y} {f} {e} {x} {x'} = ap f , ap-equiv-is-equiv X Y f e 
 ≃-preserves-hlevel : (X : 𝓤 ̇ ) (Y : 𝓥 ̇ ) (E : X ≃ Y) (n : ℕ) → X is-of-hlevel n → Y is-of-hlevel n
 ≃-preserves-hlevel X Y E 0 h = equiv-to-singleton (≃-sym E) h
 ≃-preserves-hlevel X Y E (succ n) h y y' = ≃-preserves-hlevel (g y ＝ g y') (y ＝ y') P n (h (g y) (g y'))  where
-  f = pr₁ E
-  e = pr₂ E
-  g = inverse f e
+  g = inverse (pr₁ E) (pr₂ E)
 
   P : (g y ＝ g y') ≃ (y ＝ y')
-  P = ≃-sym (ap g , ap-equiv-is-equiv Y X g (inverses-are-equivs f e) y y')
+  P = ≃-sym (ap g , ap-equiv-is-equiv Y X g (inverses-are-equivs (pr₁ E) (pr₂ E)) y y')
 
-Σ-preserves-hlevel : {X : 𝓤 ̇ } → (P : X → 𝓥 ̇ ) (n : ℕ) → X is-of-hlevel n → ((x : X) → (P x) is-of-hlevel n) → (Σ P) is-of-hlevel n
-Σ-preserves-hlevel {X = X} P 0 h f = ((c , center (P c) (f c)) , (λ - → to-Σ-＝ (α - , β -))) where
-  c = center X h
-  d = center (P c) (f c)
-  α : (μ : Σ P) → c ＝ pr₁ μ
-  α μ = centrality X h (pr₁ μ)
-  β : (μ : Σ P) → transport _ (α μ) d ＝ pr₂ μ
-  β μ = centrality (P (pr₁ μ)) (f (pr₁ μ)) _ ⁻¹ ∙ centrality (P (pr₁ μ)) (f (pr₁ μ)) _
+Σ-is-hlevel : {X : 𝓤 ̇ } (P : X → 𝓥 ̇ ) (n : ℕ) → X is-of-hlevel n → ((x : X) → (P x) is-of-hlevel n) → (Σ P) is-of-hlevel n
+Σ-is-hlevel P 0 (c , π) f = ((c , center (P c) (f c)) , γ) where
+  γ : (μ : Σ P) → (c , center (P c) (f c)) ＝ μ
+  γ (x₁ , a₁) = to-Σ-＝ (π x₁ , (centrality (P x₁) (f x₁) _ ⁻¹ ∙ centrality (P x₁) (f x₁) _)) 
+Σ-is-hlevel P (succ n) h f (x₁ , a₁) (x₂ , a₂) = ≃-preserves-hlevel _ _ E n z where
+  z : (Σ p ꞉ x₁ ＝ x₂ , transport P p a₁ ＝ a₂) is-of-hlevel n
+  z = Σ-is-hlevel (λ p → transport P p a₁ ＝ a₂) n (h x₁ x₂) (λ p → f x₂ (transport P p a₁) a₂)
 
-Σ-preserves-hlevel P (succ n) h f u v = ≃-preserves-hlevel _ _ E n z where
-  z : (Σ p ꞉ pr₁ u ＝ pr₁ v , transport P p (pr₂ u) ＝ pr₂ v) is-of-hlevel n
-  z = Σ-preserves-hlevel (λ p → transport P p (pr₂ u) ＝ pr₂ v) n (h (pr₁ u) (pr₁ v)) (λ p → f (pr₁ v) (transport P p (pr₂ u)) (pr₂ v))
-
-  E : (Σ p ꞉ pr₁ u ＝ pr₁ v , transport P p (pr₂ u) ＝ pr₂ v) ≃ (u ＝ v)
-  E = ≃-sym (Σ-＝-≃ u v)
+  E : (Σ p ꞉ x₁ ＝ x₂ , transport P p a₁ ＝ a₂) ≃ ((x₁ , a₁) ＝ (x₂ , a₂))
+  E = ≃-sym (Σ-＝-≃ (x₁ , a₁) (x₂ , a₂))
 
 
+Π-is-hlevel : {X : 𝓤 ̇ } (P : X → 𝓥 ̇ ) (ua : Univalence) (n : ℕ) → X is-of-hlevel n → ((x : X) → (P x) is-of-hlevel n) → (Π P) is-of-hlevel n
+Π-is-hlevel P ua 0 (c , π) ϕ = (λ - → pr₁ (ϕ -)) , (λ f → (univalence-gives-dfunext' (ua _) (ua _)) (λ - → pr₂ (ϕ -) (f -))) 
+Π-is-hlevel P ua (succ n) h ϕ f g = {!!}
